@@ -7,15 +7,28 @@ description: Pick ONE S&P 500 stock with explosive-return potential from the det
 
 You are orchestrating a funnel that ends in **exactly one** stock pick. The
 philosophy (modeled on a friend's early MU call): a great explosive-return bet
-is **a profitable US company that is the biggest in its niche and is riding a
-structural shortage** — demand the world cannot supply fast enough, with a
-backlog/order book that gives multi-year revenue visibility (MU's HBM booked
-out to 2026/2027 was the tell).
+is **a profitable US company that is the biggest in its niche, is riding a
+structural shortage, AND owns technology that cannot easily be replaced or
+in-sourced** — demand the world cannot supply fast enough, with a backlog/order
+book that gives multi-year revenue visibility (MU's HBM booked out to 2026/2027
+was the tell), sold by a company its own customers *can't* simply become.
 
 The deterministic Python screen has already enforced *profitable + US + growing
 + low-debt + momentum + margin-leader + category #1*. Your job is the part code
-can't do: **read the world** for the shortage/backlog signal, then force a
-decision through independent AI deliberation.
+can't do: **read the world** for (a) the shortage/backlog signal and (b) the
+**irreplaceability / disintermediation risk**, then force a decision through
+independent AI deliberation.
+
+**The disintermediation trap (weight this heavily).** A supplier can look
+unstoppable while it is structurally doomed: a hot vendor booms, then its
+largest customers — especially hyperscalers — build the thing themselves
+(custom ASICs vs NVDA, in-house cloud silicon, private-label, vertical
+integration) and the revenue collapses and *never comes back*. The best
+explosive-return bet is one whose product the customer **cannot** replicate:
+protected by process-tech leads, patents, certification/qualification lock-in,
+extreme capital intensity, or a sub-scale-uneconomic-to-copy moat. Only ~3
+firms on earth can make HBM; a hyperscaler can in-source a chip design far more
+easily than a memory fab — that asymmetry is exactly what this criterion hunts.
 
 Work through the phases in order. Keep the user updated between phases.
 
@@ -65,6 +78,11 @@ score each of the ~50 on:
   backlog, multi-year bookings, "sold out" capacity, or take-or-pay contracts?
 - **Category dominance** — is it the clear #1 with pricing power (the screen
   already favored this, but weight it).
+- **Irreplaceability / disintermediation risk** — could its biggest customers
+  (especially hyperscalers) realistically build or in-source this themselves, or
+  could a substitute technology bypass it? Favor names protected by process-tech
+  leads, patents, certification lock-in, or prohibitive capital intensity;
+  be wary of vendors whose customers are *already* building their own version.
 
 Keep the **top ~12-15** with the strongest shortage/backlog narrative. Tell the
 user the shortlist and one-line rationale each. Drop the rest (note why a couple
@@ -89,11 +107,19 @@ Give each research subagent this brief (fill in its batch of tickers):
 > 2. **Backlog / order book** — latest reported backlog or bookings figure,
 >    growth rate, and how far out it's booked. Quote the number and source date.
 > 3. **Category position** — is it the #1 player? market share vs #2?
-> 4. **Recent catalysts** (last ~3 months) — earnings beats, capacity
+> 4. **Irreplaceability / disintermediation risk** — can its biggest customers
+>    (especially hyperscalers) realistically build or in-source this themselves,
+>    or could a substitute technology route around it? Name the moat that
+>    prevents it (process-tech lead, patents, certification/qualification
+>    lock-in, capital intensity, # of firms on earth that can make it) OR the
+>    concrete in-sourcing threat (e.g. customers shipping their own ASICs).
+>    Quote evidence and give an **irreplaceability score 0-10** (10 = nobody can
+>    replicate or bypass it).
+> 5. **Recent catalysts** (last ~3 months) — earnings beats, capacity
 >    expansions, big contracts/design wins, guidance raises, analyst upgrades.
-> 5. **Risks** — what could break the thesis (cyclicality, competition,
->    customer concentration, valuation already pricing it in).
-> 6. **Shortage score 0-10** and **one-sentence verdict** per company.
+> 6. **Risks** — what could break the thesis (cyclicality, competition,
+>    customer concentration, in-sourcing, valuation already pricing it in).
+> 7. **Shortage score 0-10** and **one-sentence verdict** per company.
 > Return a compact dossier per ticker. Prefer primary sources (earnings calls,
 > 10-Q/10-K, company PRs) and reputable financial press; include dates. Do not
 > fabricate numbers — if you can't find a figure, say "not found".
@@ -115,17 +141,23 @@ isn't an echo chamber:
   multi-year revenue visibility above all.
 - **Agent B — Growth/momentum investor:** weight revenue acceleration, earnings
   revisions, and price momentum; wants the fastest compounder.
-- **Agent C — Quality/moat investor:** weight category dominance, margins,
-  returns on capital, balance-sheet durability, and durability of the thesis.
+- **Agent C — Quality/moat & irreplaceability investor:** weight category
+  dominance, margins, returns on capital, balance-sheet durability, and above
+  all **irreplaceability** — reject any name whose customers (especially
+  hyperscalers) could realistically build or in-source the product themselves,
+  or that a substitute technology could route around. You want a moat nobody can
+  copy.
 - **Agent D — Contrarian/risk skeptic:** hunt for the thesis that is *real but
   still underappreciated by the market* (avoid what's already fully priced);
-  explicitly weigh valuation and downside.
+  explicitly weigh valuation, downside, and disintermediation risk.
 
 Each subagent must return, in this exact structure:
 > - **Top pick:** TICKER
 > - **Runner-up:** TICKER
 > - **Thesis (3-5 sentences):** why this one has explosive upside
 > - **Key shortage/backlog evidence:** the single most compelling data point
+> - **Irreplaceability / disintermediation risk:** can a customer/hyperscaler
+>   in-source or a substitute bypass it? (low / medium / high — and why)
 > - **12-18 month return scenario:** rough base / bull case
 > - **Top risk:**
 > - **Conviction (1-10):**
@@ -140,16 +172,37 @@ You (the orchestrator) now decide. Do NOT just count votes mechanically:
 2. Where agents disagree, read their reasoning and adjudicate on the merits —
    strength and recency of the shortage/backlog evidence wins ties; a thesis the
    market has already fully priced loses to one with room to surprise.
-3. Sanity-check the winner against the hard data in `shortlist.json` (it must
+3. **Apply the irreplaceability filter — it can veto the vote.** A name with a
+   *credible* disintermediation threat (customers/hyperscalers in-sourcing it, a
+   substitute technology routing around it) is a poor explosive-return-that-lasts
+   bet even if it wins the vote — the boom reverses and doesn't return. Treat
+   high disintermediation risk as a near-disqualifier; prefer the name whose
+   technology its own customers genuinely cannot replicate.
+4. Sanity-check the winner against the hard data in `shortlist.json` (it must
    still pass the doctrine — don't override the screen).
-4. Choose **exactly one** final pick.
+5. Choose **exactly one** final pick.
 
 Write `output/final_pick.md` with:
 - **THE PICK:** ticker, company, sector/sub-industry, current market cap.
 - **One-paragraph thesis** in plain language (the "why this is the next MU").
 - **The shortage + backlog evidence** (the concrete, sourced data points).
 - **Why it's the category leader.**
+- **Why it's irreplaceable** — the moat that stops a customer/hyperscaler from
+  in-sourcing it or a substitute from bypassing it (or an honest statement of
+  the disintermediation risk if it's the pick's main weakness).
 - **Return scenario:** base vs bull case over 12-18 months, with the reasoning.
+- **Holding period & exit plan** — state a recommended hold horizon and *why*,
+  tied to the thesis/catalyst timeline (when does the thesis play out? what are
+  the dated catalysts — e.g. next earnings, capacity coming online, a contract
+  cycle?). Give concrete **thesis-break exit triggers** (the observable events
+  that mean "sell now, the story changed" — e.g. backlog shrinking, pricing
+  rolling over, margins peaking QoQ, a customer announcing in-sourcing). Then a
+  **leverage-safety note**: how the name's volatility/cyclicality should temper
+  any use of leverage (a high-beta cyclical like memory can draw down 50%+ fast,
+  which is brutal with margin; a steadier compounder is more forgiving). Frame
+  this as risk education, NOT a personalized leverage recommendation — never
+  suggest a specific leverage ratio or position size; surface the risks and let
+  the user decide.
 - **Key risks** and what would invalidate the thesis.
 - **The panel:** each agent's pick + conviction, and how you adjudicated.
 - **Screen metrics** for the pick (pull from shortlist.json).
@@ -168,5 +221,9 @@ panel vote, and the headline return scenario. Point them to the full writeup in
 - **Exactly one** final pick — the whole point is forcing a decision.
 - Don't override the deterministic screen. If you think a gate is wrong, say so
   to the user, but pick from the screened set.
+- **Leverage:** you may explain how the pick's volatility/cyclicality affects
+  leverage *risk* (education), but never recommend a specific leverage multiple
+  or position size — that's personalized advice. Always pair any leverage
+  discussion with the drawdown risk.
 - This is research/education, not personalized investment advice. Always include
   the disclaimer.
