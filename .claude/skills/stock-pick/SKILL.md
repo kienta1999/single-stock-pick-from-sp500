@@ -190,19 +190,28 @@ Write `output/final_pick.md` with:
 - **Why it's irreplaceable** — the moat that stops a customer/hyperscaler from
   in-sourcing it or a substitute from bypassing it (or an honest statement of
   the disintermediation risk if it's the pick's main weakness).
-- **Return scenario:** base vs bull case over 12-18 months, with the reasoning.
+- **Return scenario + price targets:** base vs bull case over 12-18 months, with
+  the reasoning. Include an explicit **price-target table** with the current
+  price, a **base-case target (price + % + by when)**, a **bull-case target
+  (price + % + by when)**, and a **downside / thesis-break exit price**. Derive
+  the targets from the scenario %s and anchor them to the current price and the
+  analyst mean target in `shortlist.json` — and if the stock trades *above* the
+  analyst mean target, say so honestly (it means the move is already partly run).
+  Label every number a research scenario, not a guarantee.
 - **Holding period & exit plan** — state a recommended hold horizon and *why*,
   tied to the thesis/catalyst timeline (when does the thesis play out? what are
   the dated catalysts — e.g. next earnings, capacity coming online, a contract
-  cycle?). Give concrete **thesis-break exit triggers** (the observable events
-  that mean "sell now, the story changed" — e.g. backlog shrinking, pricing
-  rolling over, margins peaking QoQ, a customer announcing in-sourcing). Then a
-  **leverage-safety note**: how the name's volatility/cyclicality should temper
-  any use of leverage (a high-beta cyclical like memory can draw down 50%+ fast,
-  which is brutal with margin; a steadier compounder is more forgiving). Frame
-  this as risk education, NOT a personalized leverage recommendation — never
-  suggest a specific leverage ratio or position size; surface the risks and let
-  the user decide.
+  cycle?). **Pair the price targets with the timing:** "base target $X by
+  ~<date/quarter>; bull target $Y by ~<date> if <catalyst>; exit if it hits the
+  downside trigger price $Z or any thesis-break trigger fires." Give concrete
+  **thesis-break exit triggers** (observable events meaning "sell now, the story
+  changed" — backlog shrinking, pricing rolling over, margins peaking QoQ, a
+  customer announcing in-sourcing). Then a **leverage-safety note**: how the
+  name's volatility/cyclicality should temper any use of leverage (a high-beta
+  cyclical like memory can draw down 50%+ fast, which is brutal with margin; a
+  steadier compounder is more forgiving). Frame this as risk education, NOT a
+  personalized leverage recommendation — never suggest a specific leverage ratio
+  or position size; surface the risks and let the user decide.
 - **Key risks** and what would invalidate the thesis.
 - **The panel:** each agent's pick + conviction, and how you adjudicated.
 - **Screen metrics** for the pick (pull from shortlist.json).

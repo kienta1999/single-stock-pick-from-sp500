@@ -84,6 +84,22 @@ design a customer can clone. This is the single biggest reason MU beats NVDA on
   cycle fear is already priced — the asymmetry is in whether the contracts break
   the cycle.
 
+### Price targets (research scenarios, not guarantees)
+
+Anchored to the current price of **$1,134**. ⚠️ Note the **analyst mean target is
+$946 — *below* the current price**: the sell-side has not caught up to the
+shortage (or sees cycle risk), and the stock has already run hard. So these
+targets lean on earnings power and a multiple re-rate, and the downside band is
+real.
+
+| Scenario | Target price | vs now | By when | Trigger |
+|----------|-------------:|-------:|---------|---------|
+| **Bull** | ~$1,815–2,270 | +60% to +100% | ~12–24 mo (through end-2027) | HBM4 locks 2027, DRAM stays tight, memory re-rates off 10× |
+| **Base** | ~$1,360–1,590 | +20% to +40% | ~12–18 mo (into mid-2027) | HBM sold-out holds, FY27 contracts convert |
+| **Now** | **$1,134** | — | — | entry reference |
+| **Analyst mean** | $946 | −17% | 12 mo | sell-side hasn't re-rated; cycle-risk discount |
+| **Downside exit** | ~$850 | −25% | n/a | thesis-break stop (see triggers below) |
+
 ## Holding period & exit plan
 
 **Recommended hold horizon: ~12–24 months — a *catalyst-and-cycle* hold, not a
@@ -99,6 +115,13 @@ defines the window:
 - The thesis is "the contracts dampen the cycle." You're holding to find out if
   that's true. If it is, the re-rating plays out over 2026–2027; if it isn't,
   you want to be gone before the down-leg.
+
+**Price target ↔ exit time, in one line:** hold for the **base target ~$1,475
+(+30%) by ~mid-2027**; let it run to the **bull target ~$2,000 (+75%) into
+end-2027** only if HBM4 visibly locks 2027 demand; **exit at ~$850 (−25%)** or
+the moment any thesis-break trigger below fires — whichever comes first. In
+plain terms: **plan to hold ~12–18 months toward ~$1,475, stretch to ~24 months
+toward ~$2,000 if the catalysts confirm, and cut it at ~$850 if they don't.**
 
 **Thesis-break exit triggers (sell when you see these — the story changed):**
 1. **DRAM/HBM pricing rolls over** or spot prices start falling QoQ.
