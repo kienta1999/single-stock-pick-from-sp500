@@ -24,15 +24,24 @@ Work through the phases in order. Keep the user updated between phases.
 ## Phase 0 — Ensure the shortlist exists
 
 The screen output lives at `output/shortlist.json` (and `output/shortlist.csv`).
+**Build it yourself** — do not ask the user to run the pipeline.
 
-1. Check whether `output/shortlist.json` exists and is recent (regenerate if the
-   user asks, or if it's missing/older than ~5 days). To build/refresh it:
-   ```bash
-   uv run python scripts/fetch.py      # ~5-10 min first run; cached after
-   uv run python scripts/screen.py     # writes output/shortlist.json
-   ```
-   (If `uv` isn't set up, fall back to `python`.)
-2. Read `output/shortlist.json`. It has ~50 candidates, each with: ticker,
+1. **1-day cache check.** Read the `generated` timestamp inside
+   `output/shortlist.json` (format `YYYY-MM-DD HH:MM:SS`). The screen is
+   considered fresh if that timestamp is **less than 24 hours ago**.
+   - If fresh (and the user didn't explicitly ask to refresh) → reuse it, skip
+     straight to step 2.
+   - If missing, stale (≥24h), or the user asked to refresh → rebuild it now by
+     running **both** commands yourself, in order:
+     ```bash
+     uv run python scripts/fetch.py && uv run python scripts/screen.py
+     ```
+     `fetch.py` is itself cache-gated (prices ~1 day, info ~3 days) so a rebuild
+     within the week is fast — the slow path is only the first run of the week.
+     If `uv` isn't available, fall back to `python scripts/...`. Tell the user
+     you're (re)building the screen and roughly how long it takes (~2 min warm,
+     up to ~10 min cold).
+2. Read `output/shortlist.json`. It has ~36-50 candidates, each with: ticker,
    security, GICS sector & sub-industry, marketCap, revenueGrowth,
    operatingMargins, returnOnEquity, net_debt_ebitda, momentum (dist_sma200,
    ret_12m), analyst_upside, valuation (trailingPE/forwardPE), composite_score.
