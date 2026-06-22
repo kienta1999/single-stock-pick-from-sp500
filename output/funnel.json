@@ -1,0 +1,49 @@
+[
+  {
+    "stage": "1 profitable",
+    "in": 503,
+    "out": 409,
+    "dropped": 94
+  },
+  {
+    "stage": "2 US company",
+    "in": 409,
+    "out": 391,
+    "dropped": 18
+  },
+  {
+    "stage": "3 revenue growth>0",
+    "in": 391,
+    "out": 362,
+    "dropped": 29
+  },
+  {
+    "stage": "4 leverage ok",
+    "in": 362,
+    "out": 250,
+    "dropped": 112
+  },
+  {
+    "stage": "5 above 200d SMA",
+    "in": 250,
+    "out": 147,
+    "dropped": 103
+  },
+  {
+    "stage": "6 op margin>sector med",
+    "in": 147,
+    "out": 72,
+    "dropped": 75
+  },
+  {
+    "stage": "7 category leader",
+    "out": 36,
+    "leaders_per_subindustry": 1
+  },
+  {
+    "stage": "8 trim to target",
+    "out": 36,
+    "target": 50,
+    "trimmed": false
+  }
+]
