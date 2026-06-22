@@ -15,7 +15,9 @@ Funnel (each stage prints how many names it drops):
   4. Manageable debt   net-debt / EBITDA < MAX_NET_DEBT_EBITDA (net-cash passes)
   5. Positive momentum price above its 200-day SMA
   6. Strong margins    operating margin above the company's GICS-sector median
-  7. Category leader   keep only the #1 market-cap name in each GICS Sub-Industry
+  7. Niche leaders     per GICS Sub-Industry keep the top-N by market cap UNION
+                       any co-leader ≥ R× the bucket's biggest name (keeps MU
+                       alongside NVDA; drops small also-rans like SNDK)
   8. Trim to target    if >TARGET remain, rank by a composite quality/explosive
                        score and keep the top TARGET
 
@@ -55,6 +57,15 @@ OUTPUT_DIR = os.path.join(_ROOT, "output")
 DEFAULT_TARGET = 50
 DEFAULT_MAX_NET_DEBT_EBITDA = 3.0
 US_COUNTRY = "United States"
+
+# Category-leader stage (7). GICS sub-industries are coarse — "Semiconductors"
+# holds NVDA, AVGO, MU, AMD together — so a single #1-per-bucket rule throws away
+# genuine niche leaders. We keep the union of two rules: the top-N by market cap,
+# AND any "co-leader" whose market cap is at least COLEADER_RATIO of its
+# sub-industry's biggest name (proportional, so it scales across sectors and
+# keeps a giant like MU while still dropping small also-rans like SNDK).
+DEFAULT_LEADERS_PER_SUBINDUSTRY = 2
+DEFAULT_COLEADER_RATIO = 0.20
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -124,7 +135,8 @@ def _composite_score(df: pd.DataFrame) -> pd.Series:
 def run_screen(
     target: int = DEFAULT_TARGET,
     max_net_debt_ebitda: float = DEFAULT_MAX_NET_DEBT_EBITDA,
-    leaders_per_subindustry: int = 1,
+    leaders_per_subindustry: int = DEFAULT_LEADERS_PER_SUBINDUSTRY,
+    coleader_ratio: float = DEFAULT_COLEADER_RATIO,
     trim: bool = True,
 ) -> tuple[pd.DataFrame, list[dict]]:
     df = load_metrics()
@@ -166,19 +178,28 @@ def run_screen(
     strong_margin = df["operatingMargins"] > sector_median
     df = stage("6 op margin>sector med", strong_margin.fillna(False), df)
 
-    # 7. Category leader — top-N market cap per GICS Sub-Industry (N=1 is the
-    #    strict "biggest in what it's doing" rule). N>1 widens the net so a
-    #    niche #2 that GICS lumps with a mega-cap (e.g. MU sharing the
-    #    "Semiconductors" bucket with NVDA) can survive alongside the leader.
-    df = (
-        df.sort_values("marketCap", ascending=False)
-        .groupby("gics_sub_industry", sort=False)
-        .head(leaders_per_subindustry)
-        .copy()
-    )
-    label = "7 category leader" if leaders_per_subindustry == 1 else f"7 top-{leaders_per_subindustry}/sub-ind"
-    funnel.append({"stage": label, "out": len(df), "leaders_per_subindustry": leaders_per_subindustry})
-    print(f"  {label:<22} -> {len(df):>4}  (top {leaders_per_subindustry} mktcap per sub-industry)", flush=True)
+    # 7. Category leader — keep the niche's genuine leaders, drop the also-rans.
+    #    GICS sub-industries are coarse (NVDA, AVGO, MU, AMD all = "Semiconductors")
+    #    so a single #1-per-bucket rule discards real franchises like MU's memory
+    #    business. Keep the UNION of:
+    #      (a) top-N by market cap in the sub-industry (the clear leaders), and
+    #      (b) any "co-leader" whose market cap ≥ coleader_ratio × the bucket's
+    #          biggest name (proportional → keeps a giant like MU at 25% of NVDA,
+    #          drops small tag-alongs like SNDK; "between MU and SNDK, pick MU").
+    df = df.sort_values("marketCap", ascending=False)
+    g = df.groupby("gics_sub_industry", sort=False)
+    subind_rank = g["marketCap"].rank(method="first", ascending=False)
+    leader_mc = g["marketCap"].transform("max")
+    mc_vs_leader = df["marketCap"] / leader_mc
+    keep = (subind_rank <= leaders_per_subindustry) | (mc_vs_leader >= coleader_ratio)
+    df = df[keep].copy()
+    label = f"7 niche leaders (N={leaders_per_subindustry},R={coleader_ratio:g})"
+    funnel.append({
+        "stage": label, "out": len(df),
+        "leaders_per_subindustry": leaders_per_subindustry,
+        "coleader_ratio": coleader_ratio,
+    })
+    print(f"  {label:<28} -> {len(df):>4}  (top-{leaders_per_subindustry} ∪ ≥{coleader_ratio:g}× leader per sub-industry)", flush=True)
 
     # 8. Composite score + optional trim to target.
     df["composite_score"] = _composite_score(df)
@@ -245,10 +266,14 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--target", type=int, default=DEFAULT_TARGET, help="Shortlist size to trim to.")
     ap.add_argument("--max-net-debt-ebitda", type=float, default=DEFAULT_MAX_NET_DEBT_EBITDA)
-    ap.add_argument("--leaders-per-subindustry", type=int, default=1,
-                    help="Keep top-N market-cap names per GICS sub-industry "
-                         "(N=1 = strict 'biggest in its niche'; N=2 recovers a "
-                         "niche #2 like MU that GICS lumps with NVDA).")
+    ap.add_argument("--leaders-per-subindustry", type=int, default=DEFAULT_LEADERS_PER_SUBINDUSTRY,
+                    help="Keep at least the top-N market-cap names per GICS "
+                         "sub-industry (default 2).")
+    ap.add_argument("--coleader-ratio", type=float, default=DEFAULT_COLEADER_RATIO,
+                    help="Also keep any name whose market cap is ≥ this fraction "
+                         "of its sub-industry leader (default 0.20 → keeps MU at "
+                         "~25%% of NVDA, drops small also-rans). Set to 1.0 to "
+                         "disable and rely on top-N alone.")
     ap.add_argument("--no-trim", action="store_true", help="Keep all category leaders (skip stage 8 trim).")
     args = ap.parse_args()
 
@@ -256,6 +281,7 @@ def main() -> None:
         target=args.target,
         max_net_debt_ebitda=args.max_net_debt_ebitda,
         leaders_per_subindustry=args.leaders_per_subindustry,
+        coleader_ratio=args.coleader_ratio,
         trim=not args.no_trim,
     )
     _write_outputs(df, funnel)

@@ -41,8 +41,9 @@ Each stage is a hard, repeatable gate (real numbers from a 2026-06 run):
 4. Manageable debt   250   net-debt / EBITDA < 3.0  (net-cash passes automatically)
 5. Positive momentum 147   price above its 200-day SMA
 6. Strong margins     72   operating margin > the company's GICS-sector median
-7. Category leader    36   keep the #1 market-cap name in each GICS Sub-Industry
-8. Trim to target     36   if >50 remain, keep top 50 by composite score
+7. Niche leaders      61   per GICS Sub-Industry: top-2 by market cap UNION any
+                           co-leader ≥ 20% of the bucket's biggest name
+8. Trim to target     50   if >50 remain, keep top 50 by composite score
 ```
 
 The **composite score** (used only to trim/rank, never to gate) blends
@@ -50,23 +51,30 @@ cross-sectional percentile ranks: revenue growth (30%), 12-month momentum (20%),
 operating margin (15%), ROE (15%), analyst upside (10%), low leverage (10%) —
 tuned toward growth + momentum, then quality, then valuation headroom.
 
-### ⚠️ The "biggest in its niche" caveat (important)
+### The "biggest in its niche" rule (stage 7)
 
-The strict **#1 market-cap per GICS Sub-Industry** rule (stage 7) is the most
-literal reading of "biggest in what it's doing" — but GICS is coarse. It has no
-"memory / HBM" bucket: **MU sits in the generic `Semiconductors` sub-industry
-alongside NVDA and AVGO**, so the rule keeps NVDA (#1 by market cap) and drops
-MU — even though MU passes every quality gate and has the _best operating margin
-and revenue growth_ in the entire semiconductor group.
+"Biggest in what it's doing" is the heart of the doctrine, but GICS sub-industries
+are coarse: there's no "memory / HBM" bucket, so **MU, NVDA, AVGO, AMD all sit in
+the generic `Semiconductors` sub-industry**. A naive "keep only the #1 by market
+cap" rule would throw away MU — even though it's a genuine memory franchise that
+passes every quality gate — just because NVDA is bigger in the same bucket.
 
-The friend's real rule was "biggest in **HBM/memory**", a niche GICS doesn't
-model. To recover niche #2/#3 names that share a bucket with a mega-cap:
+So stage 7 keeps the **union of two rules** per sub-industry:
+
+1. **Top-N by market cap** (`--leaders-per-subindustry`, default **2**) — the
+   clear leaders are always kept.
+2. **Co-leader by relative size** (`--coleader-ratio`, default **0.20**) — also
+   keep any name whose market cap is ≥ 20% of the bucket's biggest name.
+
+The ratio rule is *proportional*, so it adapts to every sector instead of forcing
+an arbitrary count. In Semiconductors (NVDA $5.1T leader) it keeps **NVDA, AVGO
+($1.96T = 38%), and MU ($1.28T = 25%)**, while dropping AMD (17%) and tiny
+also-rans like SNDK — i.e. "between MU and SNDK, pick MU." Tune both knobs:
 
 ```bash
-python scripts/screen.py --leaders-per-subindustry 3   # MU returns; ~50+ names → trimmed to 50
+python scripts/screen.py --coleader-ratio 0.15        # wider — also keeps AMD
+python scripts/screen.py --leaders-per-subindustry 1 --coleader-ratio 1.0  # strict #1-only
 ```
-
-Default is `1` (the strict rule). Pick the granularity that matches your intent.
 
 ## Quick start
 
@@ -95,8 +103,9 @@ thesis, return scenario, and risks to `output/final_pick.md`.
 ```bash
 python scripts/screen.py --target 30                  # tighter shortlist
 python scripts/screen.py --max-net-debt-ebitda 2.0    # stricter leverage
-python scripts/screen.py --leaders-per-subindustry 2  # top-2 per niche
-python scripts/screen.py --no-trim                    # keep every category leader
+python scripts/screen.py --leaders-per-subindustry 3  # keep top-3 per niche
+python scripts/screen.py --coleader-ratio 0.15        # wider co-leader net
+python scripts/screen.py --no-trim                    # skip the trim-to-target step
 python scripts/fetch.py --refresh                     # ignore caches, re-fetch
 python scripts/fetch.py --tickers MU,NVDA,META        # debug a subset
 ```

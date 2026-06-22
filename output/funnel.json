@@ -36,14 +36,14 @@
     "dropped": 75
   },
   {
-    "stage": "7 category leader",
-    "out": 36,
-    "leaders_per_subindustry": 1
+    "stage": "7 niche leaders (N=2,R=0.2)",
+    "out": 61,
+    "leaders_per_subindustry": 2,
+    "coleader_ratio": 0.2
   },
   {
     "stage": "8 trim to target",
-    "out": 36,
-    "target": 50,
-    "trimmed": false
+    "out": 50,
+    "target": 50
   }
 ]
