@@ -22,12 +22,12 @@ revenue visibility (MU's HBM booked out to 2026/2027 was the tell).
 
 ## Pipeline
 
-| Step | Script | What it does |
-|------|--------|--------------|
-| 1 | `scripts/universe.py` | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly). |
-| 2 | `scripts/fetch.py` | Per-ticker OHLCV (momentum) + yfinance fundamentals snapshot (market cap, margins, growth, debt, country). Threaded, retrying, age-cached. |
-| 3 | `scripts/screen.py` | The deterministic funnel → `output/shortlist.json`. |
-| 4 | `.claude/skills/stock-pick/` | The AI skill: web research → Opus 4.8 panel → one pick → `output/final_pick.md`. |
+| Step | Script                       | What it does                                                                                                                               |
+| ---- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | `scripts/universe.py`        | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                     |
+| 2    | `scripts/fetch.py`           | Per-ticker OHLCV (momentum) + yfinance fundamentals snapshot (market cap, margins, growth, debt, country). Threaded, retrying, age-cached. |
+| 3    | `scripts/screen.py`          | The deterministic funnel → `output/shortlist.json`.                                                                                        |
+| 4    | `.claude/skills/stock-pick/` | The AI skill: web research → Opus 4.8 panel → one pick → `output/final_pick.md`.                                                           |
 
 ## The deterministic funnel (`screen.py`)
 
@@ -56,8 +56,8 @@ The strict **#1 market-cap per GICS Sub-Industry** rule (stage 7) is the most
 literal reading of "biggest in what it's doing" — but GICS is coarse. It has no
 "memory / HBM" bucket: **MU sits in the generic `Semiconductors` sub-industry
 alongside NVDA and AVGO**, so the rule keeps NVDA (#1 by market cap) and drops
-MU — even though MU passes every quality gate and has the *best operating margin
-and revenue growth* in the entire semiconductor group.
+MU — even though MU passes every quality gate and has the _best operating margin
+and revenue growth_ in the entire semiconductor group.
 
 The friend's real rule was "biggest in **HBM/memory**", a niche GICS doesn't
 model. To recover niche #2/#3 names that share a bucket with a mega-cap:
@@ -114,7 +114,7 @@ python scripts/fetch.py --tickers MU,NVDA,META        # debug a subset
 - **Roster + GICS:** Wikipedia "List of S&P 500 companies".
 - **Prices + fundamentals:** Yahoo Finance via `yfinance`.
 
-Caches live under `data/` (git-ignored). This is a *current-snapshot* screen, so
+Caches live under `data/` (git-ignored). This is a _current-snapshot_ screen, so
 unlike the sibling `ml-stock-forward-return` project it needs no point-in-time
 membership history or SEC XBRL pipeline.
 
@@ -122,3 +122,5 @@ membership history or SEC XBRL pipeline.
 
 Research / educational tooling. Not financial advice. Data from third-party
 sources may be stale or wrong — verify before acting.
+
+claude --resume c01dbd4f-0dd7-47d1-b0ff-9a43214fae0f
