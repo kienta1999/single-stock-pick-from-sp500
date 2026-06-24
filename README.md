@@ -41,9 +41,12 @@ Each stage is a hard, repeatable gate (real numbers from a 2026-06 run):
 4. Manageable debt   250   net-debt / EBITDA < 3.0  (net-cash passes automatically)
 5. Positive momentum 147   price above its 200-day SMA
 6. Strong margins     72   operating margin > the company's GICS-sector median
-7. Niche leaders      61   per GICS Sub-Industry: top-2 by market cap UNION any
+7. Forward profit     72   0 < forward P/E < 60  — positive forward earnings, and
+                           a backstop against absurd valuations (universe tops
+                           out ~50, so this only ever catches blow-off names)
+8. Niche leaders      61   per GICS Sub-Industry: top-2 by market cap UNION any
                            co-leader ≥ 20% of the bucket's biggest name
-8. Trim to target     50   if >50 remain, keep top 50 by composite score
+9. Trim to target     50   if >50 remain, keep top 50 by composite score
 ```
 
 The **composite score** (used only to trim/rank, never to gate) blends
@@ -51,7 +54,7 @@ cross-sectional percentile ranks: revenue growth (30%), 12-month momentum (20%),
 operating margin (15%), ROE (15%), analyst upside (10%), low leverage (10%) —
 tuned toward growth + momentum, then quality, then valuation headroom.
 
-### The "biggest in its niche" rule (stage 7)
+### The "biggest in its niche" rule (stage 8)
 
 "Biggest in what it's doing" is the heart of the doctrine, but GICS sub-industries
 are coarse: there's no "memory / HBM" bucket, so **MU, NVDA, AVGO, AMD all sit in
@@ -103,6 +106,7 @@ thesis, return scenario, and risks to `output/final_pick.md`.
 ```bash
 python scripts/screen.py --target 30                  # tighter shortlist
 python scripts/screen.py --max-net-debt-ebitda 2.0    # stricter leverage
+python scripts/screen.py --max-forward-pe 30          # tighter forward-valuation cap
 python scripts/screen.py --leaders-per-subindustry 3  # keep top-3 per niche
 python scripts/screen.py --coleader-ratio 0.15        # wider co-leader net
 python scripts/screen.py --no-trim                    # skip the trim-to-target step
@@ -134,4 +138,3 @@ sources may be stale or wrong — verify before acting.
 
 First session: claude --resume c01dbd4f-0dd7-47d1-b0ff-9a43214fae0f
 HWM pick: claude --resume 8d5c4fe5-2e66-49af-881e-f01fce67623e
-TODO forward pe < 20?

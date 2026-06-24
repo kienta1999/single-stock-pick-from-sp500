@@ -1,7 +1,7 @@
 {
-  "generated": "2026-06-21 22:34:41",
+  "generated": "2026-06-23 19:01:02",
   "count": 50,
-  "doctrine": "profitable + US + revenue-growth + manageable-leverage + positive-momentum + strong-margins, then #1 market cap per GICS sub-industry, trimmed by composite quality/explosive score.",
+  "doctrine": "profitable + US + revenue-growth + manageable-leverage + positive-momentum + strong-margins + positive-forward-earnings (0<fwdPE<cap), then category leaders per GICS sub-industry, trimmed by composite quality/explosive score.",
   "candidates": [
     {
       "rank": 1,

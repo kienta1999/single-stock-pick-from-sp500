@@ -15,10 +15,13 @@ Funnel (each stage prints how many names it drops):
   4. Manageable debt   net-debt / EBITDA < MAX_NET_DEBT_EBITDA (net-cash passes)
   5. Positive momentum price above its 200-day SMA
   6. Strong margins    operating margin above the company's GICS-sector median
-  7. Niche leaders     per GICS Sub-Industry keep the top-N by market cap UNION
+  7. Forward profit    0 < forward P/E < MAX_FORWARD_PE — positive forward
+                       earnings (makes money next year) and not an absurd
+                       valuation; NaN forward P/E is dropped (conservative)
+  8. Niche leaders     per GICS Sub-Industry keep the top-N by market cap UNION
                        any co-leader ≥ R× the bucket's biggest name (keeps MU
                        alongside NVDA; drops small also-rans like SNDK)
-  8. Trim to target    if >TARGET remain, rank by a composite quality/explosive
+  9. Trim to target    if >TARGET remain, rank by a composite quality/explosive
                        score and keep the top TARGET
 
 Outputs:
@@ -56,6 +59,12 @@ OUTPUT_DIR = os.path.join(_ROOT, "output")
 
 DEFAULT_TARGET = 50
 DEFAULT_MAX_NET_DEBT_EBITDA = 3.0
+# Forward-valuation gate (stage 7). A high cap, not a value screen: it's a
+# sanity backstop. 0 < forwardPE enforces positive forward earnings ("makes
+# money next year"); the < 60 ceiling sits well above the legitimate growth
+# range (the universe tops out ~50) so it only ever catches absurd blow-off
+# names, never a real franchise like HWM (~46) or the semi-equipment complex.
+DEFAULT_MAX_FORWARD_PE = 60.0
 US_COUNTRY = "United States"
 
 # Category-leader stage (7). GICS sub-industries are coarse — "Semiconductors"
@@ -135,6 +144,7 @@ def _composite_score(df: pd.DataFrame) -> pd.Series:
 def run_screen(
     target: int = DEFAULT_TARGET,
     max_net_debt_ebitda: float = DEFAULT_MAX_NET_DEBT_EBITDA,
+    max_forward_pe: float = DEFAULT_MAX_FORWARD_PE,
     leaders_per_subindustry: int = DEFAULT_LEADERS_PER_SUBINDUSTRY,
     coleader_ratio: float = DEFAULT_COLEADER_RATIO,
     trim: bool = True,
@@ -178,7 +188,16 @@ def run_screen(
     strong_margin = df["operatingMargins"] > sector_median
     df = stage("6 op margin>sector med", strong_margin.fillna(False), df)
 
-    # 7. Category leader — keep the niche's genuine leaders, drop the also-rans.
+    # 7. Forward profitability + valuation sanity. 0 < forwardPE enforces
+    #    positive forward earnings ("makes money next year"); the high ceiling is
+    #    a backstop against absurd valuations, not a value screen — it sits well
+    #    above the legit growth range so it never bites a real franchise. NaN
+    #    forward P/E (no estimate) is dropped, consistent with the leverage gate.
+    fwd = df["forwardPE"]
+    forward_ok = (fwd > 0) & (fwd < max_forward_pe)
+    df = stage(f"7 0<fwdPE<{max_forward_pe:g}", forward_ok.fillna(False), df)
+
+    # 8. Category leader — keep the niche's genuine leaders, drop the also-rans.
     #    GICS sub-industries are coarse (NVDA, AVGO, MU, AMD all = "Semiconductors")
     #    so a single #1-per-bucket rule discards real franchises like MU's memory
     #    business. Keep the UNION of:
@@ -193,7 +212,7 @@ def run_screen(
     mc_vs_leader = df["marketCap"] / leader_mc
     keep = (subind_rank <= leaders_per_subindustry) | (mc_vs_leader >= coleader_ratio)
     df = df[keep].copy()
-    label = f"7 niche leaders (N={leaders_per_subindustry},R={coleader_ratio:g})"
+    label = f"8 niche leaders (N={leaders_per_subindustry},R={coleader_ratio:g})"
     funnel.append({
         "stage": label, "out": len(df),
         "leaders_per_subindustry": leaders_per_subindustry,
@@ -201,15 +220,15 @@ def run_screen(
     })
     print(f"  {label:<28} -> {len(df):>4}  (top-{leaders_per_subindustry} ∪ ≥{coleader_ratio:g}× leader per sub-industry)", flush=True)
 
-    # 8. Composite score + optional trim to target.
+    # 9. Composite score + optional trim to target.
     df["composite_score"] = _composite_score(df)
     df = df.sort_values("composite_score", ascending=False).reset_index(drop=True)
     if trim and len(df) > target:
         df = df.head(target).copy()
-        funnel.append({"stage": "8 trim to target", "out": len(df), "target": target})
-        print(f"  {'8 trim to target':<22} -> {len(df):>4}  (top {target} by composite score)", flush=True)
+        funnel.append({"stage": "9 trim to target", "out": len(df), "target": target})
+        print(f"  {'9 trim to target':<22} -> {len(df):>4}  (top {target} by composite score)", flush=True)
     else:
-        funnel.append({"stage": "8 trim to target", "out": len(df), "target": target, "trimmed": False})
+        funnel.append({"stage": "9 trim to target", "out": len(df), "target": target, "trimmed": False})
 
     df.insert(0, "rank", range(1, len(df) + 1))
     return df, funnel
@@ -242,8 +261,9 @@ def _write_outputs(df: pd.DataFrame, funnel: list[dict]) -> None:
         "generated": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
         "count": len(df),
         "doctrine": "profitable + US + revenue-growth + manageable-leverage + "
-                    "positive-momentum + strong-margins, then #1 market cap per "
-                    "GICS sub-industry, trimmed by composite quality/explosive score.",
+                    "positive-momentum + strong-margins + positive-forward-earnings "
+                    "(0<fwdPE<cap), then category leaders per GICS sub-industry, "
+                    "trimmed by composite quality/explosive score.",
         "candidates": records,
     }
     with open(json_path, "w") as f:
@@ -266,6 +286,10 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--target", type=int, default=DEFAULT_TARGET, help="Shortlist size to trim to.")
     ap.add_argument("--max-net-debt-ebitda", type=float, default=DEFAULT_MAX_NET_DEBT_EBITDA)
+    ap.add_argument("--max-forward-pe", type=float, default=DEFAULT_MAX_FORWARD_PE,
+                    help="Forward-P/E ceiling (default 60). Names must have "
+                         "0 < forwardPE < this — positive forward earnings and "
+                         "not an absurd valuation. A backstop, not a value screen.")
     ap.add_argument("--leaders-per-subindustry", type=int, default=DEFAULT_LEADERS_PER_SUBINDUSTRY,
                     help="Keep at least the top-N market-cap names per GICS "
                          "sub-industry (default 2).")
@@ -280,6 +304,7 @@ def main() -> None:
     df, funnel = run_screen(
         target=args.target,
         max_net_debt_ebitda=args.max_net_debt_ebitda,
+        max_forward_pe=args.max_forward_pe,
         leaders_per_subindustry=args.leaders_per_subindustry,
         coleader_ratio=args.coleader_ratio,
         trim=not args.no_trim,
