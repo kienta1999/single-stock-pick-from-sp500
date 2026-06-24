@@ -66,7 +66,7 @@ So stage 7 keeps the **union of two rules** per sub-industry:
 2. **Co-leader by relative size** (`--coleader-ratio`, default **0.20**) — also
    keep any name whose market cap is ≥ 20% of the bucket's biggest name.
 
-The ratio rule is *proportional*, so it adapts to every sector instead of forcing
+The ratio rule is _proportional_, so it adapts to every sector instead of forcing
 an arbitrary count. In Semiconductors (NVDA $5.1T leader) it keeps **NVDA, AVGO
 ($1.96T = 38%), and MU ($1.28T = 25%)**, while dropping AMD (17%) and tiny
 also-rans like SNDK — i.e. "between MU and SNDK, pick MU." Tune both knobs:
@@ -132,4 +132,6 @@ membership history or SEC XBRL pipeline.
 Research / educational tooling. Not financial advice. Data from third-party
 sources may be stale or wrong — verify before acting.
 
-claude --resume c01dbd4f-0dd7-47d1-b0ff-9a43214fae0f
+First session: claude --resume c01dbd4f-0dd7-47d1-b0ff-9a43214fae0f
+HWM pick: claude --resume 8d5c4fe5-2e66-49af-881e-f01fce67623e
+TODO forward pe < 20?
