@@ -1,11 +1,12 @@
 ---
 name: stock-pick
-description: Pick ONE S&P 500 stock with explosive-return potential from the deterministic screen. Runs the Python funnel to get ~50 quality category-leaders, web-researches each for structural-shortage / order-book-backlog signals, fans the enriched dossier out to multiple Opus 4.8 subagents that independently nominate, then aggregates into one final conviction pick with a written thesis. Use when the user asks to "pick a stock", "run the stock picker", "find the next MU", or invokes /stock-pick.
+description: Pick ONE S&P 500 stock with explosive-return potential — or a ranked top-N — from the deterministic screen. Runs the Python funnel to get ~50 quality category-leaders, web-researches each for structural-shortage / order-book-backlog signals, fans the enriched dossier out to multiple Opus 4.8 subagents that independently nominate (or rank), then aggregates into either one final conviction pick or a ranked top-N with a written thesis. Use when the user asks to "pick a stock", "run the stock picker", "find the next MU", "rank the top N stocks", or invokes /stock-pick.
 ---
 
-# Stock Pick — from S&P 500 to one conviction bet
+# Stock Pick — from S&P 500 to a conviction bet (one pick, or a ranked top-N)
 
-You are orchestrating a funnel that ends in **exactly one** stock pick. The
+You are orchestrating a funnel that ends in either **exactly one** stock pick
+**or** a **ranked top-N** — the user chooses (see *Mode* below). The
 philosophy (modeled on a friend's early MU call): a great explosive-return bet
 is **a profitable US company that is the biggest in its niche, is riding a
 structural shortage, AND owns technology that cannot easily be replaced or
@@ -31,6 +32,32 @@ firms on earth can make HBM; a hyperscaler can in-source a chip design far more
 easily than a memory fab — that asymmetry is exactly what this criterion hunts.
 
 Work through the phases in order. Keep the user updated between phases.
+
+---
+
+## Mode — one final pick (default) or a ranked top-N
+
+The funnel is **identical** in both modes through Phases 0–2; only Phase 3's
+return format and Phase 4's output differ. Decide the mode from the user's
+request / the `/stock-pick` arguments:
+
+- **Single-pick mode (DEFAULT).** The user wants the one conviction bet ("pick a
+  stock", "find the next MU", no count given). End in exactly one pick →
+  `output/final_pick.md`. Use **Phase 3 (single-pick variant)** + **Phase 4A**.
+- **Ranked top-N mode.** The user asks to "rank", "top 5 / top 10", "give me N
+  names", "rank N instead of 1", etc. Parse **N** (if they say "rank" with no
+  number, default **N = 10**; cap N at the shortlist size). End in a ranked top-N
+  → `output/final_ranking.md`. Use **Phase 3 (ranked variant)** + **Phase 4B**.
+- **Optional multi-round aggregation** (ranked mode). If the user asks to run the
+  panel several times and aggregate (e.g. "rank 5 times", "20 agents", "average
+  it"), set **R** = the number of rounds (default R = 1) and repeat Phase 3 R
+  times — i.e. **4×R** ranking agents total — then aggregate all 4×R ballots in
+  Phase 4B. This cuts single-sample variance; call out where the averaged order
+  differs from a single round.
+
+If the mode is genuinely ambiguous, default to single-pick but tell the user the
+ranked option exists (and vice-versa). State which mode (and N, R) you're running
+before Phase 3.
 
 ---
 
@@ -130,12 +157,14 @@ shortage scores. Save it to `output/research_dossier.md`.
 
 ---
 
-## Phase 3 — Independent nomination (Opus 4.8 voting panel)
+## Phase 3 — Independent nomination / ranking (Opus 4.8 voting panel)
 
 Spawn **4 independent selection subagents** in parallel (one message, four
 `Agent` calls, `subagent_type: "claude"`, `model: "opus"`). Give all four the
 **same** consolidated dossier, but assign each a distinct lens so the panel
-isn't an echo chamber:
+isn't an echo chamber. **In ranked top-N mode with R > 1, spawn 4×R agents
+(R independent rounds of the four lenses)** — parallelize as far as is practical
+(batch the messages if 4×R is large).
 
 - **Agent A — Supply-chain analyst:** weight the shortage/backlog evidence and
   multi-year revenue visibility above all.
@@ -151,7 +180,7 @@ isn't an echo chamber:
   still underappreciated by the market* (avoid what's already fully priced);
   explicitly weigh valuation, downside, and disintermediation risk.
 
-Each subagent must return, in this exact structure:
+**Single-pick variant** — each subagent must return, in this exact structure:
 > - **Top pick:** TICKER
 > - **Runner-up:** TICKER
 > - **Thesis (3-5 sentences):** why this one has explosive upside
@@ -162,9 +191,18 @@ Each subagent must return, in this exact structure:
 > - **Top risk:**
 > - **Conviction (1-10):**
 
+**Ranked variant** — instead of one pick, each subagent **ranks its top
+max(N, 10)** of the shortlisted names, best first, **through its lens** (rank a
+floor of 10 even when N < 10 so the aggregate has depth below the cut line).
+Require exactly this compact output so the ballots aggregate cleanly:
+> A numbered list, best first: `RANK. TICKER — <=6-word reason (this lens)`.
+> Then, for its **top 3 only**, 2–3 sentences on the single most compelling
+> shortage/backlog or moat data point and a rough 12–18mo base/bull scenario.
+> Then one line: which names it deliberately left out of its top 10 and why.
+
 ---
 
-## Phase 4 — Aggregate and pick ONE
+## Phase 4A — Aggregate and pick ONE (single-pick mode)
 
 You (the orchestrator) now decide. Do NOT just count votes mechanically:
 
@@ -223,13 +261,70 @@ panel vote, and the headline return scenario. Point them to the full writeup in
 
 ---
 
+## Phase 4B — Aggregate into a ranked top-N (ranked mode)
+
+You (the orchestrator) now build the ranking. Aggregate, then adjudicate:
+
+1. **Score the ballots with Borda points.** Within each agent's ranked list,
+   rank 1 = 10 pts, rank 2 = 9, … rank 10 = 1 (unranked = 0). Sum across all
+   ballots (4 agents, or **4×R** if you ran R rounds). Per name also track:
+   **appearances** (how many ballots ranked it), **#1 votes**, and **average
+   placement** — these separate *conviction* (many #1 votes) from *consensus*
+   (ranked by almost everyone but rarely at the top).
+2. **Order by total Borda.** Break ties on the doctrine, not mechanically:
+   higher irreplaceability + fresher shortage/backlog evidence wins; then more
+   #1 votes, then better average placement.
+3. **Irreplaceability is a FLAG here, not a veto.** Unlike single-pick mode
+   (where a credible disintermediation threat near-disqualifies), in a ranking
+   you **keep** such names but make the risk visible in their row — the reader
+   sees the caveat and decides. Note explicitly if the strict-doctrine order at
+   the top would differ from the Borda order.
+4. Sanity-check every top-N name against `shortlist.json` (each must still pass
+   the screen's doctrine — don't override the screen).
+5. Produce the final ranked **top N**.
+
+Write `output/final_ranking.md` with:
+- **The ranking table** — rank, ticker, company, sector/sub-industry, current
+  price, analyst mean target (+upside %), forward PE, **shortage & irreplaceability
+  scores**, and a one-line case per name. If you ran R > 1 rounds, also show
+  **Borda points, appearances (e.g. 16/20), #1 votes, and average placement**.
+- **Per-name thesis** — a one-paragraph thesis for at least the top 3–5 (shortage
+  + backlog evidence, why category leader, the moat OR the honest disintermediation
+  caveat); one tight line each for the rest.
+- **Just-missed names** — the few that fell just outside the top N, with why.
+- **What the panel revealed** — each lens's top few, where they agreed/disagreed,
+  and (if R > 1) which names were conviction vs consensus, and what the averaging
+  changed vs a single round.
+- **If forced to ONE** — name the single pick the strict irreplaceability veto
+  would land on, and why it may differ from the Borda #1. This keeps the doctrine
+  honest even in ranked mode.
+- **Return scenarios** — at minimum a base/bull headline for the top 3, anchored
+  to current price and the analyst mean target in `shortlist.json`; flag any name
+  trading *above* its mean target (move already partly run). Label every number a
+  research scenario, not a guarantee.
+- **Risk lens & leverage-safety note** across the list — sector concentration,
+  which names are highest-beta/most cyclical vs steadier compounders, paired with
+  drawdown reality. Same education-not-advice framing as single-pick mode: never
+  a specific leverage multiple or position size.
+- **Thesis-break triggers** to watch across the ranked names.
+- A dated disclaimer: this is research output, not financial advice.
+
+Then present a tight summary: the ranked top-N table, the panel split (and what
+multi-round averaging changed, if R > 1), and point the user to
+`output/final_ranking.md`.
+
+---
+
 ## Guardrails
 
 - **Never fabricate** financial figures, backlog numbers, or quotes. Attribute
   and date every concrete claim; if research can't confirm something, say so.
-- **Exactly one** final pick — the whole point is forcing a decision.
+- **Respect the chosen mode.** Single-pick mode → **exactly one** final pick (the
+  point is forcing a decision; the irreplaceability filter can veto the vote).
+  Ranked mode → **exactly N** names (default 10), ordered, with each name's
+  irreplaceability / disintermediation caveat visible rather than vetoed.
 - Don't override the deterministic screen. If you think a gate is wrong, say so
-  to the user, but pick from the screened set.
+  to the user, but pick (or rank) from the screened set.
 - **Leverage:** you may explain how the pick's volatility/cyclicality affects
   leverage *risk* (education), but never recommend a specific leverage multiple
   or position size — that's personalized advice. Always pair any leverage
