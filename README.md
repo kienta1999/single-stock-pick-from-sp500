@@ -30,13 +30,13 @@ and the same three scripts, switched by `screen.py --mode`:
 
 ## Pipeline
 
-| Step | Script                                  | What it does                                                                                                                               |
-| ---- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1    | `scripts/universe.py`                   | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                     |
-| 2    | `scripts/fetch.py`                      | Per-ticker OHLCV (momentum + drawdown) + yfinance fundamentals snapshot (market cap, margins, growth, debt, country). Threaded, retrying, age-cached. |
-| 3    | `scripts/screen.py --mode {momentum,dip}` | The deterministic funnel → `output/<mode>/shortlist.json`.                                                                               |
-| 4a   | `.claude/skills/stock-pick-momentum/`   | Momentum AI skill: web research → Opus 4.8 panel → one pick (or top-N) → `output/momentum/final_pick.md`.                                  |
-| 4b   | `.claude/skills/stock-pick-dip/`        | Dip AI skill: web research → Opus 4.8 panel → one pick (or top-N) → `output/dip/final_pick.md`.                                            |
+| Step | Script                                    | What it does                                                                                                                                          |
+| ---- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `scripts/universe.py`                     | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                                |
+| 2    | `scripts/fetch.py`                        | Per-ticker OHLCV (momentum + drawdown) + yfinance fundamentals snapshot (market cap, margins, growth, debt, country). Threaded, retrying, age-cached. |
+| 3    | `scripts/screen.py --mode {momentum,dip}` | The deterministic funnel → `output/<mode>/shortlist.json`.                                                                                            |
+| 4a   | `.claude/skills/stock-pick-momentum/`     | Momentum AI skill: web research → Opus 4.8 panel → one pick (or top-N) → `output/momentum/final_pick.md`.                                             |
+| 4b   | `.claude/skills/stock-pick-dip/`          | Dip AI skill: web research → Opus 4.8 panel → one pick (or top-N) → `output/dip/final_pick.md`.                                                       |
 
 ## The deterministic funnel (`screen.py`)
 
@@ -169,3 +169,5 @@ sources may be stale or wrong — verify before acting.
 First session: claude --resume c01dbd4f-0dd7-47d1-b0ff-9a43214fae0f
 HWM pick: claude --resume 8d5c4fe5-2e66-49af-881e-f01fce67623e
 Pick 10 stock: claude --resume 4baf5057-d47b-4050-8ab1-772d56ea55d6
+Buy dip: claude --resume 000cc485-9eeb-4751-9424-6db1e65ab0ee
+Buy dip actual run: claude --resume 1cde50b6-c2f1-4565-8352-6a824264f2c8
