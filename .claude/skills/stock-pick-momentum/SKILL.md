@@ -1,9 +1,14 @@
 ---
-name: stock-pick
-description: Pick ONE S&P 500 stock with explosive-return potential — or a ranked top-N — from the deterministic screen. Runs the Python funnel to get ~50 quality category-leaders, web-researches each for structural-shortage / order-book-backlog signals, fans the enriched dossier out to multiple Opus 4.8 subagents that independently nominate (or rank), then aggregates into either one final conviction pick or a ranked top-N with a written thesis. Use when the user asks to "pick a stock", "run the stock picker", "find the next MU", "rank the top N stocks", or invokes /stock-pick.
+name: stock-pick-momentum
+description: Pick ONE S&P 500 momentum stock with explosive-return potential — or a ranked top-N — from the deterministic MOMENTUM screen (price above its 200-day SMA, riding a structural shortage). Runs the Python funnel in --mode momentum to get ~50 quality category-leaders, web-researches each for structural-shortage / order-book-backlog signals, fans the enriched dossier out to multiple Opus 4.8 subagents that independently nominate (or rank), then aggregates into either one final conviction pick or a ranked top-N with a written thesis. Use when the user asks to "pick a momentum stock", "run the momentum picker", "find the next MU", "rank the top N momentum stocks", or invokes /stock-pick-momentum. For beaten-down quality names that will rebound, use the sibling /stock-pick-dip skill instead.
 ---
 
-# Stock Pick — from S&P 500 to a conviction bet (one pick, or a ranked top-N)
+# Stock Pick (Momentum) — from S&P 500 to a conviction bet (one pick, or a ranked top-N)
+
+> Buys **strength**: this skill rides the deterministic momentum screen (price
+> **above** its 200-day SMA) plus a structural-shortage thesis. The mirror-image
+> skill **`stock-pick-dip`** buys **weakness** — quality names that have
+> corrected and will rebound. Same funnel, opposite price gate.
 
 You are orchestrating a funnel that ends in either **exactly one** stock pick
 **or** a **ranked top-N** — the user chooses (see *Mode* below). The
@@ -39,15 +44,15 @@ Work through the phases in order. Keep the user updated between phases.
 
 The funnel is **identical** in both modes through Phases 0–2; only Phase 3's
 return format and Phase 4's output differ. Decide the mode from the user's
-request / the `/stock-pick` arguments:
+request / the `/stock-pick-momentum` arguments:
 
 - **Single-pick mode (DEFAULT).** The user wants the one conviction bet ("pick a
   stock", "find the next MU", no count given). End in exactly one pick →
-  `output/final_pick.md`. Use **Phase 3 (single-pick variant)** + **Phase 4A**.
+  `output/momentum/final_pick.md`. Use **Phase 3 (single-pick variant)** + **Phase 4A**.
 - **Ranked top-N mode.** The user asks to "rank", "top 5 / top 10", "give me N
   names", "rank N instead of 1", etc. Parse **N** (if they say "rank" with no
   number, default **N = 10**; cap N at the shortlist size). End in a ranked top-N
-  → `output/final_ranking.md`. Use **Phase 3 (ranked variant)** + **Phase 4B**.
+  → `output/momentum/final_ranking.md`. Use **Phase 3 (ranked variant)** + **Phase 4B**.
 - **Optional multi-round aggregation** (ranked mode). If the user asks to run the
   panel several times and aggregate (e.g. "rank 5 times", "20 agents", "average
   it"), set **R** = the number of rounds (default R = 1) and repeat Phase 3 R
@@ -63,25 +68,25 @@ before Phase 3.
 
 ## Phase 0 — Ensure the shortlist exists
 
-The screen output lives at `output/shortlist.json` (and `output/shortlist.csv`).
+The screen output lives at `output/momentum/shortlist.json` (and `output/momentum/shortlist.csv`).
 **Build it yourself** — do not ask the user to run the pipeline.
 
 1. **1-day cache check.** Read the `generated` timestamp inside
-   `output/shortlist.json` (format `YYYY-MM-DD HH:MM:SS`). The screen is
+   `output/momentum/shortlist.json` (format `YYYY-MM-DD HH:MM:SS`). The screen is
    considered fresh if that timestamp is **less than 24 hours ago**.
    - If fresh (and the user didn't explicitly ask to refresh) → reuse it, skip
      straight to step 2.
    - If missing, stale (≥24h), or the user asked to refresh → rebuild it now by
      running **both** commands yourself, in order:
      ```bash
-     uv run python scripts/fetch.py && uv run python scripts/screen.py
+     uv run python scripts/fetch.py && uv run python scripts/screen.py --mode momentum
      ```
      `fetch.py` is itself cache-gated (prices ~1 day, info ~3 days) so a rebuild
      within the week is fast — the slow path is only the first run of the week.
      If `uv` isn't available, fall back to `python scripts/...`. Tell the user
      you're (re)building the screen and roughly how long it takes (~2 min warm,
      up to ~10 min cold).
-2. Read `output/shortlist.json`. It has ~36-50 candidates, each with: ticker,
+2. Read `output/momentum/shortlist.json`. It has ~36-50 candidates, each with: ticker,
    security, GICS sector & sub-industry, marketCap, revenueGrowth,
    operatingMargins, returnOnEquity, net_debt_ebitda, momentum (dist_sma200,
    ret_12m), analyst_upside, valuation (trailingPE/forwardPE), composite_score.
@@ -153,7 +158,7 @@ Give each research subagent this brief (fill in its batch of tickers):
 
 Collect the returned dossiers. Assemble a single consolidated **research
 dossier** (markdown) covering all ~12-15 names with their metrics + findings +
-shortage scores. Save it to `output/research_dossier.md`.
+shortage scores. Save it to `output/momentum/research_dossier.md`.
 
 ---
 
@@ -220,7 +225,7 @@ You (the orchestrator) now decide. Do NOT just count votes mechanically:
    still pass the doctrine — don't override the screen).
 5. Choose **exactly one** final pick.
 
-Write `output/final_pick.md` with:
+Write `output/momentum/final_pick.md` with:
 - **THE PICK:** ticker, company, sector/sub-industry, current market cap.
 - **One-paragraph thesis** in plain language (the "why this is the next MU").
 - **The shortage + backlog evidence** (the concrete, sourced data points).
@@ -257,7 +262,7 @@ Write `output/final_pick.md` with:
 
 Then present a tight summary to the user: the pick, the one-line thesis, the
 panel vote, and the headline return scenario. Point them to the full writeup in
-`output/final_pick.md`.
+`output/momentum/final_pick.md`.
 
 ---
 
@@ -283,7 +288,7 @@ You (the orchestrator) now build the ranking. Aggregate, then adjudicate:
    the screen's doctrine — don't override the screen).
 5. Produce the final ranked **top N**.
 
-Write `output/final_ranking.md` with:
+Write `output/momentum/final_ranking.md` with:
 - **The ranking table** — rank, ticker, company, sector/sub-industry, current
   price, analyst mean target (+upside %), forward PE, **shortage & irreplaceability
   scores**, and a one-line case per name. If you ran R > 1 rounds, also show
@@ -311,7 +316,7 @@ Write `output/final_ranking.md` with:
 
 Then present a tight summary: the ranked top-N table, the panel split (and what
 multi-round averaging changed, if R > 1), and point the user to
-`output/final_ranking.md`.
+`output/momentum/final_ranking.md`.
 
 ---
 

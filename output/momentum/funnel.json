@@ -1,9 +1,9 @@
 [
   {
     "stage": "1 profitable",
-    "in": 503,
+    "in": 502,
     "out": 409,
-    "dropped": 94
+    "dropped": 93
   },
   {
     "stage": "2 US company",

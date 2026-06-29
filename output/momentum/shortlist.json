@@ -1,7 +1,8 @@
 {
-  "generated": "2026-06-23 19:01:02",
+  "generated": "2026-06-29 04:36:57",
+  "mode": "momentum",
   "count": 50,
-  "doctrine": "profitable + US + revenue-growth + manageable-leverage + positive-momentum + strong-margins + positive-forward-earnings (0<fwdPE<cap), then category leaders per GICS sub-industry, trimmed by composite quality/explosive score.",
+  "doctrine": "profitable + US + revenue-growth + manageable-leverage + positive-momentum (price ABOVE 200d SMA) + strong-margins + positive-forward-earnings (0<fwdPE<cap), then category leaders per GICS sub-industry, trimmed by composite quality/explosive (growth + momentum) score.",
   "candidates": [
     {
       "rank": 1,

@@ -1,40 +1,55 @@
 #!/usr/bin/env python3
 """Deterministic S&P 500 screen -> ~50 quality category-leaders.
 
-Encodes the investment doctrine (a friend's MU call: profitable, US, the
-biggest in its niche, riding a structural shortage) as a hard, repeatable
-funnel. The output shortlist is what the AI `stock-pick` skill then researches
-and votes on.
+Two modes share the same quality funnel but differ at the price gate (stage 5)
+and the ranking score, so one script feeds both AI skills:
+
+  --mode momentum (default) — the original doctrine (a friend's MU call:
+      profitable, US, biggest in its niche, riding a structural shortage). Buys
+      STRENGTH: price ABOVE its 200-day SMA; score rewards 12-month momentum.
+      Consumed by the `stock-pick-momentum` skill. Writes to output/momentum/.
+
+  --mode dip — buy a reboundable quality dip. Same quality gates, but buys
+      WEAKNESS: price BELOW its 200-day SMA and off its 52-week high (but not
+      wrecked — a value-trap floor drops names down more than the floor). Score
+      rewards rebound headroom + quality + balance-sheet survival, not momentum.
+      Consumed by the `stock-pick-dip` skill. Writes to output/dip/.
 
 Funnel (each stage prints how many names it drops):
 
   0. Universe          all current S&P 500 members
   1. Profitable        TTM net income > 0
   2. US company        country == "United States"
-  3. Revenue growth    YoY revenue growth > 0
+  3. Revenue growth    YoY revenue growth > 0  (also the anti-value-trap gate)
   4. Manageable debt   net-debt / EBITDA < MAX_NET_DEBT_EBITDA (net-cash passes)
-  5. Positive momentum price above its 200-day SMA
+  5. Price gate        momentum: price ABOVE its 200-day SMA
+                       dip:      price BELOW its 200-day SMA, AND drawdown from
+                                 the 52-week high no worse than DIP_DRAWDOWN_FLOOR
   6. Strong margins    operating margin above the company's GICS-sector median
   7. Forward profit    0 < forward P/E < MAX_FORWARD_PE — positive forward
                        earnings (makes money next year) and not an absurd
-                       valuation; NaN forward P/E is dropped (conservative)
+                       valuation; NaN forward P/E is dropped (conservative).
+                       Default ceiling tightens for dip (cheapness tilt).
   8. Niche leaders     per GICS Sub-Industry keep the top-N by market cap UNION
                        any co-leader ≥ R× the bucket's biggest name (keeps MU
                        alongside NVDA; drops small also-rans like SNDK)
-  9. Trim to target    if >TARGET remain, rank by a composite quality/explosive
-                       score and keep the top TARGET
+  9. Trim to target    if >TARGET remain, rank by a mode-specific composite
+                       quality/explosive (momentum) or rebound (dip) score and
+                       keep the top TARGET
 
-Outputs:
-    output/shortlist.csv    human-readable, ranked
-    output/shortlist.json   full records for the stock-pick skill to consume
-    output/funnel.json      the stage-by-stage drop counts (audit trail)
+Outputs (under output/<mode>/):
+    shortlist.csv    human-readable, ranked
+    shortlist.json   full records for the stock-pick skill to consume
+    funnel.json      the stage-by-stage drop counts (audit trail)
 
 Run scripts/fetch.py first (it populates the caches this reads).
 
 CLI:
-    python scripts/screen.py
+    python scripts/screen.py                       # momentum (default)
+    python scripts/screen.py --mode dip            # buy-the-dip screen
+    python scripts/screen.py --mode dip --dip-drawdown-floor 0.40
     python scripts/screen.py --target 50 --max-net-debt-ebitda 3.0
-    python scripts/screen.py --no-trim          # keep all category leaders
+    python scripts/screen.py --no-trim             # keep all category leaders
 """
 
 import argparse
@@ -55,7 +70,15 @@ if _HERE not in sys.path:
 from fetch import load_metrics  # noqa: E402
 
 _ROOT = os.path.dirname(_HERE)
-OUTPUT_DIR = os.path.join(_ROOT, "output")
+# Per-mode output folder: output/momentum/ or output/dip/. Resolved via
+# _output_dir(mode); the three filenames inside are identical across modes.
+OUTPUT_ROOT = os.path.join(_ROOT, "output")
+MODES = ("momentum", "dip")
+
+
+def _output_dir(mode: str) -> str:
+    return os.path.join(OUTPUT_ROOT, mode)
+
 
 DEFAULT_TARGET = 50
 DEFAULT_MAX_NET_DEBT_EBITDA = 3.0
@@ -65,6 +88,13 @@ DEFAULT_MAX_NET_DEBT_EBITDA = 3.0
 # range (the universe tops out ~50) so it only ever catches absurd blow-off
 # names, never a real franchise like HWM (~46) or the semi-equipment complex.
 DEFAULT_MAX_FORWARD_PE = 60.0
+# Dip mode tightens the ceiling — a reboundable quality dip should also be a
+# margin-of-safety entry, not a still-expensive falling knife.
+DEFAULT_MAX_FORWARD_PE_DIP = 35.0
+# Dip price gate (stage 5). Keep names BELOW their 200-day SMA but drop the
+# falling knives: anything more than this fraction below its 52-week high is
+# usually a broken thesis, not a reboundable correction.
+DEFAULT_DIP_DRAWDOWN_FLOOR = 0.55
 US_COUNTRY = "United States"
 
 # Category-leader stage (7). GICS sub-industries are coarse — "Semiconductors"
@@ -121,11 +151,26 @@ def _rank_pct(s: pd.Series, ascending: bool = True) -> pd.Series:
     return r.fillna(0.5)
 
 
-def _composite_score(df: pd.DataFrame) -> pd.Series:
-    """Quality + explosiveness blend. Higher = more attractive. Rank-based so
-    it's scale-robust and NaN-tolerant. Tuned toward the thesis: reward growth
-    and momentum first, then quality, then valuation headroom."""
-    score = (
+def _composite_score(df: pd.DataFrame, mode: str = "momentum") -> pd.Series:
+    """Rank-based blend (scale-robust, NaN-tolerant). Higher = more attractive.
+    Used only to trim/rank, never to gate.
+
+    momentum: reward growth and 12-month momentum first, then quality, then
+              valuation headroom — the explosive-compounder thesis.
+    dip:      reward rebound headroom (analyst upside) and depth of the drawdown,
+              then quality and balance-sheet survival — the reboundable-dip
+              thesis. Deliberately does NOT reward momentum (these names are
+              beaten down by construction)."""
+    if mode == "dip":
+        return (
+            0.25 * _rank_pct(df["analyst_upside"])                  # headroom to mean target
+            + 0.20 * _rank_pct(df["dist_52w_high"], ascending=False)  # more beaten-down = more room
+            + 0.15 * _rank_pct(df["operatingMargins"])             # quality intact
+            + 0.15 * _rank_pct(df["returnOnEquity"])               # quality intact
+            + 0.15 * _rank_pct(df["revenueGrowth"])                # still growing (not a trap)
+            + 0.10 * _rank_pct(df["net_debt_ebitda"], ascending=False)  # survival: less leverage better
+        )
+    return (
         0.30 * _rank_pct(df["revenueGrowth"])
         + 0.20 * _rank_pct(df["ret_12m"])
         + 0.15 * _rank_pct(df["operatingMargins"])
@@ -133,7 +178,6 @@ def _composite_score(df: pd.DataFrame) -> pd.Series:
         + 0.10 * _rank_pct(df["analyst_upside"])
         + 0.10 * _rank_pct(df["net_debt_ebitda"], ascending=False)  # less leverage better
     )
-    return score
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -148,6 +192,8 @@ def run_screen(
     leaders_per_subindustry: int = DEFAULT_LEADERS_PER_SUBINDUSTRY,
     coleader_ratio: float = DEFAULT_COLEADER_RATIO,
     trim: bool = True,
+    mode: str = "momentum",
+    dip_drawdown_floor: float = DEFAULT_DIP_DRAWDOWN_FLOOR,
 ) -> tuple[pd.DataFrame, list[dict]]:
     df = load_metrics()
     if df.empty:
@@ -179,8 +225,14 @@ def run_screen(
     # 4. Manageable leverage.
     df = stage("4 leverage ok", df.apply(lambda r: _leverage_ok(r, max_net_debt_ebitda), axis=1), df)
 
-    # 5. Positive momentum — above 200d SMA.
-    df = stage("5 above 200d SMA", df["above_sma200"].fillna(False), df)
+    # 5. Price gate. momentum buys strength (above 200d SMA); dip buys weakness
+    #    (below 200d SMA) but drops falling knives via a drawdown floor.
+    if mode == "dip":
+        df = stage("5 below 200d SMA", (df["dist_sma200"] < 0).fillna(False), df)
+        within_floor = df["dist_52w_high"] >= -dip_drawdown_floor
+        df = stage(f"5b drawdown >=-{dip_drawdown_floor:g}", within_floor.fillna(False), df)
+    else:
+        df = stage("5 above 200d SMA", df["above_sma200"].fillna(False), df)
 
     # 6. Operating margin above the company's GICS-sector median (computed over
     #    the survivors of 1-5 so the benchmark is profitable, growing US peers).
@@ -221,7 +273,7 @@ def run_screen(
     print(f"  {label:<28} -> {len(df):>4}  (top-{leaders_per_subindustry} ∪ ≥{coleader_ratio:g}× leader per sub-industry)", flush=True)
 
     # 9. Composite score + optional trim to target.
-    df["composite_score"] = _composite_score(df)
+    df["composite_score"] = _composite_score(df, mode=mode)
     df = df.sort_values("composite_score", ascending=False).reset_index(drop=True)
     if trim and len(df) > target:
         df = df.head(target).copy()
@@ -239,40 +291,55 @@ def run_screen(
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Columns surfaced in the human-readable CSV (full record goes to JSON).
+# dist_52w_high is the dip-depth signal — useful in momentum CSVs too, central
+# to the dip screen.
 CSV_COLS = [
     "rank", "ticker", "security", "gics_sector", "gics_sub_industry",
     "marketCap", "composite_score",
     "revenueGrowth", "operatingMargins", "profitMargins", "returnOnEquity",
-    "net_debt_ebitda", "dist_sma200", "ret_12m", "analyst_upside",
+    "net_debt_ebitda", "dist_sma200", "dist_52w_high", "ret_12m", "analyst_upside",
     "trailingPE", "forwardPE", "recommendationKey",
 ]
 
+_DOCTRINE = {
+    "momentum": "profitable + US + revenue-growth + manageable-leverage + "
+                "positive-momentum (price ABOVE 200d SMA) + strong-margins + "
+                "positive-forward-earnings (0<fwdPE<cap), then category leaders "
+                "per GICS sub-industry, trimmed by composite quality/explosive "
+                "(growth + momentum) score.",
+    "dip": "profitable + US + revenue-growth (anti-value-trap) + "
+           "manageable-leverage + IN A DIP (price BELOW 200d SMA, drawdown from "
+           "52w high within floor) + strong-margins + positive-forward-earnings "
+           "(0<fwdPE<cap, tighter for cheapness), then category leaders per GICS "
+           "sub-industry, trimmed by composite rebound score (analyst upside + "
+           "drawdown room + quality + balance-sheet survival).",
+}
 
-def _write_outputs(df: pd.DataFrame, funnel: list[dict]) -> None:
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+def _write_outputs(df: pd.DataFrame, funnel: list[dict], mode: str = "momentum") -> None:
+    output_dir = _output_dir(mode)
+    os.makedirs(output_dir, exist_ok=True)
 
     csv_cols = [c for c in CSV_COLS if c in df.columns]
-    csv_path = os.path.join(OUTPUT_DIR, "shortlist.csv")
+    csv_path = os.path.join(output_dir, "shortlist.csv")
     df[csv_cols].to_csv(csv_path, index=False)
 
-    json_path = os.path.join(OUTPUT_DIR, "shortlist.json")
+    json_path = os.path.join(output_dir, "shortlist.json")
     records = json.loads(df.replace({np.nan: None}).to_json(orient="records"))
     payload = {
         "generated": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "mode": mode,
         "count": len(df),
-        "doctrine": "profitable + US + revenue-growth + manageable-leverage + "
-                    "positive-momentum + strong-margins + positive-forward-earnings "
-                    "(0<fwdPE<cap), then category leaders per GICS sub-industry, "
-                    "trimmed by composite quality/explosive score.",
+        "doctrine": _DOCTRINE.get(mode, _DOCTRINE["momentum"]),
         "candidates": records,
     }
     with open(json_path, "w") as f:
         json.dump(payload, f, indent=2)
 
-    with open(os.path.join(OUTPUT_DIR, "funnel.json"), "w") as f:
+    with open(os.path.join(output_dir, "funnel.json"), "w") as f:
         json.dump(funnel, f, indent=2)
 
-    print(f"\nWrote {len(df)} candidates to:")
+    print(f"\nWrote {len(df)} candidates ({mode} mode) to:")
     print(f"  {csv_path}")
     print(f"  {json_path}")
 
@@ -284,12 +351,22 @@ def _write_outputs(df: pd.DataFrame, funnel: list[dict]) -> None:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--mode", choices=MODES, default="momentum",
+                    help="momentum (default): buy strength, price ABOVE 200d SMA, "
+                         "writes output/momentum/. dip: buy a reboundable quality "
+                         "dip, price BELOW 200d SMA within the drawdown floor, "
+                         "writes output/dip/.")
     ap.add_argument("--target", type=int, default=DEFAULT_TARGET, help="Shortlist size to trim to.")
     ap.add_argument("--max-net-debt-ebitda", type=float, default=DEFAULT_MAX_NET_DEBT_EBITDA)
-    ap.add_argument("--max-forward-pe", type=float, default=DEFAULT_MAX_FORWARD_PE,
-                    help="Forward-P/E ceiling (default 60). Names must have "
-                         "0 < forwardPE < this — positive forward earnings and "
-                         "not an absurd valuation. A backstop, not a value screen.")
+    ap.add_argument("--max-forward-pe", type=float, default=None,
+                    help="Forward-P/E ceiling. Names must have 0 < forwardPE < this "
+                         "— positive forward earnings and not an absurd valuation. "
+                         "Defaults to 60 (momentum) / 35 (dip, cheapness tilt) when "
+                         "not given.")
+    ap.add_argument("--dip-drawdown-floor", type=float, default=DEFAULT_DIP_DRAWDOWN_FLOOR,
+                    help="Dip mode only: drop names down more than this fraction "
+                         "from their 52-week high (default 0.55 → keeps corrections, "
+                         "rejects falling knives).")
     ap.add_argument("--leaders-per-subindustry", type=int, default=DEFAULT_LEADERS_PER_SUBINDUSTRY,
                     help="Keep at least the top-N market-cap names per GICS "
                          "sub-industry (default 2).")
@@ -301,19 +378,26 @@ def main() -> None:
     ap.add_argument("--no-trim", action="store_true", help="Keep all category leaders (skip stage 8 trim).")
     args = ap.parse_args()
 
+    max_forward_pe = args.max_forward_pe
+    if max_forward_pe is None:
+        max_forward_pe = DEFAULT_MAX_FORWARD_PE_DIP if args.mode == "dip" else DEFAULT_MAX_FORWARD_PE
+
     df, funnel = run_screen(
         target=args.target,
         max_net_debt_ebitda=args.max_net_debt_ebitda,
-        max_forward_pe=args.max_forward_pe,
+        max_forward_pe=max_forward_pe,
         leaders_per_subindustry=args.leaders_per_subindustry,
         coleader_ratio=args.coleader_ratio,
         trim=not args.no_trim,
+        mode=args.mode,
+        dip_drawdown_floor=args.dip_drawdown_floor,
     )
-    _write_outputs(df, funnel)
+    _write_outputs(df, funnel, mode=args.mode)
 
-    print("\nTop 15 by composite score:")
+    print(f"\nTop 15 by composite score ({args.mode} mode):")
+    perf_col = "dist_52w_high" if args.mode == "dip" else "ret_12m"
     show = ["rank", "ticker", "security", "gics_sub_industry", "marketCap",
-            "revenueGrowth", "operatingMargins", "ret_12m", "composite_score"]
+            "revenueGrowth", "operatingMargins", perf_col, "analyst_upside", "composite_score"]
     show = [c for c in show if c in df.columns]
     with pd.option_context("display.max_rows", None, "display.width", 200,
                            "display.float_format", lambda x: f"{x:,.3f}"):

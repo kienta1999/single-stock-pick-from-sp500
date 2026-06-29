@@ -1,58 +1,77 @@
 # single-stock-pick-from-sp500
 
-Pick **one** S&P 500 stock with explosive-return potential — by funneling all
-503 members through a **deterministic quality screen** (Python), then handing the
-survivors to a **multi-agent AI skill** that web-researches each for a structural
-shortage / order-book thesis and forces a single conviction pick.
+Pick **one** S&P 500 stock with explosive-return potential (or a ranked top-N) —
+by funneling all 503 members through a **deterministic quality screen** (Python),
+then handing the survivors to a **multi-agent AI skill** that web-researches each
+and forces a conviction pick. Two complementary strategies share the same funnel
+and the same three scripts, switched by `screen.py --mode`:
 
-The doctrine is modeled on a friend's early Micron (MU) call: **a profitable US
-company that is the biggest in its niche and is riding a structural shortage** —
-demand the world can't supply fast enough, with a backlog that gives multi-year
-revenue visibility (MU's HBM booked out to 2026/2027 was the tell).
+- **Momentum** (`--mode momentum`, skill `/stock-pick-momentum`) — buy
+  **strength**. A profitable US company that is the biggest in its niche, **price
+  above its 200-day SMA**, riding a **structural shortage** — demand the world
+  can't supply fast enough, with a backlog that gives multi-year revenue
+  visibility (MU's HBM booked out to 2026/2027 was the tell). Modeled on a
+  friend's early Micron (MU) call.
+- **Dip** (`--mode dip`, skill `/stock-pick-dip`) — buy **weakness**. The same
+  quality, moaty, category-leading company, but **price below its 200-day SMA**
+  and off its 52-week high (yet not wrecked), corrected on a **transitory** cause
+  with an intact moat (especially **AI-irreplaceable**), a rebound catalyst, and
+  a margin of safety. Buy the dislocation, not the decline.
 
 ```
-503 S&P 500 names ──[ deterministic funnel ]──> ~36-50 quality leaders
+503 S&P 500 names ──[ deterministic funnel (--mode momentum | dip) ]──> ~30-50 quality leaders
                                                       │
                                                       ▼
-                          /stock-pick skill: web research + Opus 4.8 voting panel
+           /stock-pick-momentum  OR  /stock-pick-dip : web research + Opus 4.8 voting panel
                                                       │
                                                       ▼
-                                            ONE conviction pick + thesis
+                           ONE conviction pick (or ranked top-N) + thesis
 ```
 
 ## Pipeline
 
-| Step | Script                       | What it does                                                                                                                               |
-| ---- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1    | `scripts/universe.py`        | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                     |
-| 2    | `scripts/fetch.py`           | Per-ticker OHLCV (momentum) + yfinance fundamentals snapshot (market cap, margins, growth, debt, country). Threaded, retrying, age-cached. |
-| 3    | `scripts/screen.py`          | The deterministic funnel → `output/shortlist.json`.                                                                                        |
-| 4    | `.claude/skills/stock-pick/` | The AI skill: web research → Opus 4.8 panel → one pick → `output/final_pick.md`.                                                           |
+| Step | Script                                  | What it does                                                                                                                               |
+| ---- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | `scripts/universe.py`                   | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                     |
+| 2    | `scripts/fetch.py`                      | Per-ticker OHLCV (momentum + drawdown) + yfinance fundamentals snapshot (market cap, margins, growth, debt, country). Threaded, retrying, age-cached. |
+| 3    | `scripts/screen.py --mode {momentum,dip}` | The deterministic funnel → `output/<mode>/shortlist.json`.                                                                               |
+| 4a   | `.claude/skills/stock-pick-momentum/`   | Momentum AI skill: web research → Opus 4.8 panel → one pick (or top-N) → `output/momentum/final_pick.md`.                                  |
+| 4b   | `.claude/skills/stock-pick-dip/`        | Dip AI skill: web research → Opus 4.8 panel → one pick (or top-N) → `output/dip/final_pick.md`.                                            |
 
 ## The deterministic funnel (`screen.py`)
 
-Each stage is a hard, repeatable gate (real numbers from a 2026-06 run):
+Each stage is a hard, repeatable gate. **Only stage 5 (the price gate), the
+forward-PE default, and the composite score differ between modes** — every
+quality gate is shared. Real numbers from a 2026-06 run:
 
 ```
-0. Universe          503   all current S&P 500 members
-1. Profitable        409   TTM net income > 0
-2. US company        391   country == "United States"
-3. Revenue growth    362   YoY revenue growth > 0
-4. Manageable debt   250   net-debt / EBITDA < 3.0  (net-cash passes automatically)
-5. Positive momentum 147   price above its 200-day SMA
-6. Strong margins     72   operating margin > the company's GICS-sector median
-7. Forward profit     72   0 < forward P/E < 60  — positive forward earnings, and
-                           a backstop against absurd valuations (universe tops
-                           out ~50, so this only ever catches blow-off names)
-8. Niche leaders      61   per GICS Sub-Industry: top-2 by market cap UNION any
-                           co-leader ≥ 20% of the bucket's biggest name
-9. Trim to target     50   if >50 remain, keep top 50 by composite score
+                       momentum   dip
+0. Universe              503      503   all current S&P 500 members
+1. Profitable            409      409   TTM net income > 0
+2. US company            391      391   country == "United States"
+3. Revenue growth        362      362   YoY revenue growth > 0  (also anti-value-trap)
+4. Manageable debt       250      250   net-debt / EBITDA < 3.0  (net-cash passes)
+5. Price gate            147      102   momentum: price ABOVE 200-day SMA
+                                        dip:      price BELOW 200-day SMA …
+5b. Drawdown floor        —        97   dip only: ≤55% below the 52-week high
+                                        (drops falling knives; --dip-drawdown-floor)
+6. Strong margins         72       45   operating margin > the GICS-sector median
+7. Forward profit         72       44   0 < forward P/E < cap (60 momentum / 35 dip)
+8. Niche leaders          61       40   per GICS Sub-Industry: top-2 by market cap
+                                        UNION any co-leader ≥ 20% of the biggest name
+9. Trim to target         50       40   if >50 remain, keep top 50 by composite score
 ```
 
 The **composite score** (used only to trim/rank, never to gate) blends
-cross-sectional percentile ranks: revenue growth (30%), 12-month momentum (20%),
-operating margin (15%), ROE (15%), analyst upside (10%), low leverage (10%) —
-tuned toward growth + momentum, then quality, then valuation headroom.
+cross-sectional percentile ranks, and is mode-specific:
+
+- **momentum:** revenue growth (30%), 12-month momentum (20%), operating margin
+  (15%), ROE (15%), analyst upside (10%), low leverage (10%) — growth + momentum
+  first, then quality, then valuation headroom.
+- **dip:** analyst upside / rebound headroom (25%), drawdown depth (20%, deeper =
+  more room, the floor gate caps the wrecks), operating margin (15%), ROE (15%),
+  revenue growth (15%), low leverage / survival (10%) — rebound room + quality +
+  balance-sheet durability, deliberately **not** momentum.
 
 ### The "biggest in its niche" rule (stage 8)
 
@@ -86,27 +105,36 @@ uv sync                                   # install deps into .venv
 
 uv run python scripts/universe.py         # build the S&P 500 roster
 uv run python scripts/fetch.py            # fetch prices + fundamentals (~2 min, cached after)
-uv run python scripts/screen.py           # → output/shortlist.{json,csv}
+uv run python scripts/screen.py --mode momentum   # → output/momentum/shortlist.{json,csv}
+uv run python scripts/screen.py --mode dip        # → output/dip/shortlist.{json,csv}
 ```
 
-Then run the AI picker from Claude Code:
+(`--mode momentum` is the default, so bare `screen.py` is the momentum screen.)
+
+Then run the AI picker from Claude Code — one skill per strategy:
 
 ```
-/stock-pick
+/stock-pick-momentum          # buy strength: shortage + above-200d-SMA
+/stock-pick-dip               # buy weakness: reboundable quality dip
+/stock-pick-dip rank 10       # ranked top-10 instead of a single pick
 ```
 
-It will (re)build the shortlist if needed, triage to the ~12-15 names with the
-strongest shortage/backlog story, fan deep web research out to parallel research
-subagents, convene a 4-member Opus 4.8 voting panel (supply-chain / growth /
-quality / contrarian lenses), and write the final conviction pick with its
-thesis, return scenario, and risks to `output/final_pick.md`.
+Each will (re)build its shortlist if needed, triage to the ~12-15 strongest
+names, fan deep web research out to parallel research subagents, convene a
+4-member Opus 4.8 voting panel, and write the final conviction pick (or ranked
+top-N) with its thesis, return scenario, and risks to `output/<mode>/final_pick.md`
+(or `final_ranking.md`). The momentum panel runs supply-chain / growth / quality /
+contrarian lenses; the dip panel runs catalyst / compounder / moat-&-AI-
+irreplaceability / falling-knife-skeptic lenses.
 
 ### Useful flags
 
 ```bash
+python scripts/screen.py --mode dip                   # the buy-the-dip screen
+python scripts/screen.py --mode dip --dip-drawdown-floor 0.40  # stricter falling-knife cut
 python scripts/screen.py --target 30                  # tighter shortlist
 python scripts/screen.py --max-net-debt-ebitda 2.0    # stricter leverage
-python scripts/screen.py --max-forward-pe 30          # tighter forward-valuation cap
+python scripts/screen.py --max-forward-pe 30          # override the forward-valuation cap
 python scripts/screen.py --leaders-per-subindustry 3  # keep top-3 per niche
 python scripts/screen.py --coleader-ratio 0.15        # wider co-leader net
 python scripts/screen.py --no-trim                    # skip the trim-to-target step
@@ -116,11 +144,13 @@ python scripts/fetch.py --tickers MU,NVDA,META        # debug a subset
 
 ## Outputs
 
-- `output/shortlist.json` — full records (45 fields/candidate) for the skill.
-- `output/shortlist.csv` — human-readable, ranked.
-- `output/funnel.json` — stage-by-stage drop counts (audit trail).
-- `output/research_dossier.md` — written by the skill (web research).
-- `output/final_pick.md` — written by the skill (the one pick + thesis).
+Each mode writes to its own folder, `output/momentum/` or `output/dip/`:
+
+- `output/<mode>/shortlist.json` — full records (45 fields/candidate) for the skill.
+- `output/<mode>/shortlist.csv` — human-readable, ranked (dip CSV surfaces `dist_52w_high`).
+- `output/<mode>/funnel.json` — stage-by-stage drop counts (audit trail).
+- `output/<mode>/research_dossier.md` — written by the skill (web research).
+- `output/<mode>/final_pick.md` / `final_ranking.md` — written by the skill (the pick(s) + thesis).
 
 ## Data sources
 
