@@ -31,3 +31,4 @@ date,mode,kind,rank,ticker,price_at_pick,base_target,base_by,bull_target,bull_by
 2026-07-02,momentum,rank10,8,CDNS,377.73,,,,,,"EDA duopoly toll booth, record $8B backlog; benefits from in-sourcing; durable not explosive",output/momentum/final_ranking.md
 2026-07-02,momentum,rank10,9,CAT,991.41,,,,,,"$63B backlog, gensets sold out through 2027; above-mean valuation flag on a cyclical",output/momentum/final_ranking.md
 2026-07-02,momentum,rank10,10,FCX,60.53,,,,,,"Copper deficit + 50% US tariff at 15x; Grasberg outage and surplus-forecast flags",output/momentum/final_ranking.md
+2026-07-02,dip,single,1,CME,231.00,295,2027-Q2,330,2027-Q4,190,"~99% US rate-futures clearing monopoly at ~18.8x fwd vs mid-20s norm; record Q1 into a Kalshi/FMX scare the moat already survived",output/dip/final_pick.md
