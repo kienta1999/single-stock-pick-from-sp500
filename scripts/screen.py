@@ -20,7 +20,11 @@ Funnel (each stage prints how many names it drops):
   0. Universe          all current S&P 500 members
   1. Profitable        TTM net income > 0
   2. US company        country == "United States"
-  3. Revenue growth    YoY revenue growth > 0  (also the anti-value-trap gate)
+  3. Revenue growth    TTM YoY revenue growth > 0 (also the anti-value-trap
+                       gate). Uses rev_growth_ttm (smoothed, from annual
+                       statements — see fetch.py) so one lumpy quarter doesn't
+                       eject a compounder; falls back to Yahoo's single-quarter
+                       revenueGrowth when statements are unavailable.
   4. Manageable debt   net-debt / EBITDA < MAX_NET_DEBT_EBITDA (net-cash passes)
   5. Price gate        momentum: price ABOVE its 200-day SMA
                        dip:      price BELOW its 200-day SMA, AND drawdown from
@@ -28,11 +32,16 @@ Funnel (each stage prints how many names it drops):
   6. Strong margins    operating margin above the company's GICS-sector median
   7. Forward profit    0 < forward P/E < MAX_FORWARD_PE — positive forward
                        earnings (makes money next year) and not an absurd
-                       valuation; NaN forward P/E is dropped (conservative).
+                       valuation; NaN forward P/E is dropped (conservative,
+                       and the dropped tickers are printed so a missing Yahoo
+                       estimate never costs a name invisibly).
                        Default ceiling tightens for dip (cheapness tilt).
   8. Niche leaders     per GICS Sub-Industry keep the top-N by market cap UNION
                        any co-leader ≥ R× the bucket's biggest name (keeps MU
-                       alongside NVDA; drops small also-rans like SNDK)
+                       alongside NVDA; drops small also-rans like SNDK).
+                       Leadership is measured against the FULL S&P 500 universe,
+                       not the gate survivors — so a #4 name can't become a
+                       "leader" just because the real leaders failed a gate.
   9. Trim to target    if >TARGET remain, rank by a mode-specific composite
                        quality/explosive (momentum) or rebound (dip) score and
                        keep the top TARGET
@@ -121,12 +130,32 @@ def _add_derived(df: pd.DataFrame) -> pd.DataFrame:
         df["net_debt"] / df["ebitda"],
         np.nan,
     )
+    # Leverage as used by the composite score: a net-cash company with no
+    # usable EBITDA has the best possible balance sheet, not a neutral one —
+    # rank it best instead of letting NaN fall to the 0.5 neutral fill.
+    df["net_debt_ebitda_rankable"] = np.where(
+        (df["net_debt"] <= 0) & df["net_debt_ebitda"].isna(),
+        -np.inf,
+        df["net_debt_ebitda"],
+    )
+    # Growth as used by gate + score: smoothed TTM YoY when statements gave us
+    # one, else Yahoo's single-quarter YoY.
+    ttm = df["rev_growth_ttm"] if "rev_growth_ttm" in df.columns else pd.Series(np.nan, index=df.index)
+    df["rev_growth"] = ttm.fillna(df["revenueGrowth"])
     # Analyst implied upside (sanity signal, not a gate).
     df["analyst_upside"] = np.where(
         (df["targetMeanPrice"].notna()) & (df["price"].notna()) & (df["price"] > 0),
         df["targetMeanPrice"] / df["price"] - 1,
         np.nan,
     )
+    # Niche leadership, measured against the FULL universe (everything fetched),
+    # before any gate: a name's sub-industry rank and its size relative to the
+    # sub-industry's biggest member must not depend on which peers happen to
+    # survive the funnel (e.g. in dip mode the true leader is usually NOT in a
+    # dip — the #4 name must not inherit "leader" status by default).
+    g = df.groupby("gics_sub_industry")["marketCap"]
+    df["subind_rank"] = g.rank(method="first", ascending=False)
+    df["mc_vs_subind_leader"] = df["marketCap"] / g.transform("max")
     return df
 
 
@@ -167,16 +196,16 @@ def _composite_score(df: pd.DataFrame, mode: str = "momentum") -> pd.Series:
             + 0.20 * _rank_pct(df["dist_52w_high"], ascending=False)  # more beaten-down = more room
             + 0.15 * _rank_pct(df["operatingMargins"])             # quality intact
             + 0.15 * _rank_pct(df["returnOnEquity"])               # quality intact
-            + 0.15 * _rank_pct(df["revenueGrowth"])                # still growing (not a trap)
-            + 0.10 * _rank_pct(df["net_debt_ebitda"], ascending=False)  # survival: less leverage better
+            + 0.15 * _rank_pct(df["rev_growth"])                   # still growing (not a trap)
+            + 0.10 * _rank_pct(df["net_debt_ebitda_rankable"], ascending=False)  # survival: less leverage better
         )
     return (
-        0.30 * _rank_pct(df["revenueGrowth"])
+        0.30 * _rank_pct(df["rev_growth"])
         + 0.20 * _rank_pct(df["ret_12m"])
         + 0.15 * _rank_pct(df["operatingMargins"])
         + 0.15 * _rank_pct(df["returnOnEquity"])
         + 0.10 * _rank_pct(df["analyst_upside"])
-        + 0.10 * _rank_pct(df["net_debt_ebitda"], ascending=False)  # less leverage better
+        + 0.10 * _rank_pct(df["net_debt_ebitda_rankable"], ascending=False)  # less leverage better
     )
 
 
@@ -219,8 +248,14 @@ def run_screen(
     # 2. US company.
     df = stage("2 US company", df["country"] == US_COUNTRY, df)
 
-    # 3. Revenue growth YoY > 0.
-    df = stage("3 revenue growth>0", df["revenueGrowth"].fillna(-1) > 0, df)
+    # 3. Revenue growth YoY > 0, on the smoothed TTM measure (rev_growth falls
+    #    back to Yahoo's single-quarter revenueGrowth where statements are
+    #    missing — see _add_derived).
+    n_fallback = int((df["rev_growth_ttm"].isna() & df["revenueGrowth"].notna()).sum()) \
+        if "rev_growth_ttm" in df.columns else len(df)
+    if n_fallback:
+        print(f"  (growth gate: {n_fallback} names lack TTM statements, using quarterly YoY fallback)", flush=True)
+    df = stage("3 TTM rev growth>0", df["rev_growth"].fillna(-1) > 0, df)
 
     # 4. Manageable leverage.
     df = stage("4 leverage ok", df.apply(lambda r: _leverage_ok(r, max_net_debt_ebitda), axis=1), df)
@@ -244,8 +279,14 @@ def run_screen(
     #    positive forward earnings ("makes money next year"); the high ceiling is
     #    a backstop against absurd valuations, not a value screen — it sits well
     #    above the legit growth range so it never bites a real franchise. NaN
-    #    forward P/E (no estimate) is dropped, consistent with the leverage gate.
+    #    forward P/E (no estimate) is dropped, consistent with the leverage gate
+    #    — but those tickers are named, so a missing Yahoo estimate never costs
+    #    a candidate invisibly.
     fwd = df["forwardPE"]
+    no_estimate = sorted(df.loc[fwd.isna(), "ticker"])
+    if no_estimate:
+        print(f"  (fwdPE gate: dropping {len(no_estimate)} with NO forward-PE estimate: "
+              f"{', '.join(no_estimate)})", flush=True)
     forward_ok = (fwd > 0) & (fwd < max_forward_pe)
     df = stage(f"7 0<fwdPE<{max_forward_pe:g}", forward_ok.fillna(False), df)
 
@@ -257,30 +298,30 @@ def run_screen(
     #      (b) any "co-leader" whose market cap ≥ coleader_ratio × the bucket's
     #          biggest name (proportional → keeps a giant like MU at 25% of NVDA,
     #          drops small tag-alongs like SNDK; "between MU and SNDK, pick MU").
-    df = df.sort_values("marketCap", ascending=False)
-    g = df.groupby("gics_sub_industry", sort=False)
-    subind_rank = g["marketCap"].rank(method="first", ascending=False)
-    leader_mc = g["marketCap"].transform("max")
-    mc_vs_leader = df["marketCap"] / leader_mc
-    keep = (subind_rank <= leaders_per_subindustry) | (mc_vs_leader >= coleader_ratio)
-    df = df[keep].copy()
+    #    subind_rank / mc_vs_subind_leader come from _add_derived and are
+    #    measured against the FULL universe, not the survivors — otherwise (esp.
+    #    in dip mode, where the true leader is usually not dipping) a #4 name
+    #    would inherit "leader" status just because its betters failed a gate.
+    keep = (df["subind_rank"] <= leaders_per_subindustry) | (df["mc_vs_subind_leader"] >= coleader_ratio)
     label = f"8 niche leaders (N={leaders_per_subindustry},R={coleader_ratio:g})"
-    funnel.append({
-        "stage": label, "out": len(df),
+    df = stage(label, keep.fillna(False), df)
+    funnel[-1].update({
         "leaders_per_subindustry": leaders_per_subindustry,
         "coleader_ratio": coleader_ratio,
     })
-    print(f"  {label:<28} -> {len(df):>4}  (top-{leaders_per_subindustry} ∪ ≥{coleader_ratio:g}× leader per sub-industry)", flush=True)
 
     # 9. Composite score + optional trim to target.
     df["composite_score"] = _composite_score(df, mode=mode)
     df = df.sort_values("composite_score", ascending=False).reset_index(drop=True)
+    n_in = len(df)
     if trim and len(df) > target:
         df = df.head(target).copy()
-        funnel.append({"stage": "9 trim to target", "out": len(df), "target": target})
-        print(f"  {'9 trim to target':<22} -> {len(df):>4}  (top {target} by composite score)", flush=True)
+        funnel.append({"stage": "9 trim to target", "in": n_in, "out": len(df),
+                       "dropped": n_in - len(df), "target": target})
+        print(f"  {'9 trim to target':<22} {n_in:>4} -> {len(df):>4}  (top {target} by composite score)", flush=True)
     else:
-        funnel.append({"stage": "9 trim to target", "out": len(df), "target": target, "trimmed": False})
+        funnel.append({"stage": "9 trim to target", "in": n_in, "out": len(df),
+                       "dropped": 0, "target": target, "trimmed": False})
 
     df.insert(0, "rank", range(1, len(df) + 1))
     return df, funnel
@@ -296,23 +337,25 @@ def run_screen(
 CSV_COLS = [
     "rank", "ticker", "security", "gics_sector", "gics_sub_industry",
     "marketCap", "composite_score",
-    "revenueGrowth", "operatingMargins", "profitMargins", "returnOnEquity",
+    "rev_growth_ttm", "revenueGrowth", "operatingMargins", "profitMargins", "returnOnEquity",
     "net_debt_ebitda", "dist_sma200", "dist_52w_high", "ret_12m", "analyst_upside",
     "trailingPE", "forwardPE", "recommendationKey",
 ]
 
 _DOCTRINE = {
-    "momentum": "profitable + US + revenue-growth + manageable-leverage + "
+    "momentum": "profitable + US + TTM-revenue-growth + manageable-leverage + "
                 "positive-momentum (price ABOVE 200d SMA) + strong-margins + "
                 "positive-forward-earnings (0<fwdPE<cap), then category leaders "
-                "per GICS sub-industry, trimmed by composite quality/explosive "
+                "per GICS sub-industry (leadership measured vs the full "
+                "universe), trimmed by composite quality/explosive "
                 "(growth + momentum) score.",
-    "dip": "profitable + US + revenue-growth (anti-value-trap) + "
+    "dip": "profitable + US + TTM-revenue-growth (anti-value-trap) + "
            "manageable-leverage + IN A DIP (price BELOW 200d SMA, drawdown from "
            "52w high within floor) + strong-margins + positive-forward-earnings "
            "(0<fwdPE<cap, tighter for cheapness), then category leaders per GICS "
-           "sub-industry, trimmed by composite rebound score (analyst upside + "
-           "drawdown room + quality + balance-sheet survival).",
+           "sub-industry (leadership measured vs the full universe), trimmed by "
+           "composite rebound score (analyst upside + drawdown room + quality + "
+           "balance-sheet survival).",
 }
 
 
@@ -375,7 +418,7 @@ def main() -> None:
                          "of its sub-industry leader (default 0.20 → keeps MU at "
                          "~25%% of NVDA, drops small also-rans). Set to 1.0 to "
                          "disable and rely on top-N alone.")
-    ap.add_argument("--no-trim", action="store_true", help="Keep all category leaders (skip stage 8 trim).")
+    ap.add_argument("--no-trim", action="store_true", help="Keep all category leaders (skip the stage-9 trim).")
     args = ap.parse_args()
 
     max_forward_pe = args.max_forward_pe
@@ -397,7 +440,7 @@ def main() -> None:
     print(f"\nTop 15 by composite score ({args.mode} mode):")
     perf_col = "dist_52w_high" if args.mode == "dip" else "ret_12m"
     show = ["rank", "ticker", "security", "gics_sub_industry", "marketCap",
-            "revenueGrowth", "operatingMargins", perf_col, "analyst_upside", "composite_score"]
+            "rev_growth", "operatingMargins", perf_col, "analyst_upside", "composite_score"]
     show = [c for c in show if c in df.columns]
     with pd.option_context("display.max_rows", None, "display.width", 200,
                            "display.float_format", lambda x: f"{x:,.3f}"):

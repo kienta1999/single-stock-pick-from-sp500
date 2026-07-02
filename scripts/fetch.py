@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 """Fetch + cache the raw data the screen needs, one row of truth per ticker.
 
-Two sources, both yfinance (kept deliberately lean — this is a current-snapshot
+Three sources, all yfinance (kept deliberately lean — this is a current-snapshot
 screen, not the full point-in-time XBRL pipeline of ml-stock-forward-return):
 
-  1. Prices   -> data/prices/{TICKER}.parquet   (~13 months of daily OHLCV)
-                 Drives momentum: distance from 200d SMA, 52w-high, 6/12m return.
-  2. Info     -> data/info/{TICKER}.json        (yfinance Ticker.get_info())
-                 Drives fundamentals: market cap, margins, revenue growth,
-                 leverage, country, sector/industry names.
+  1. Prices       -> data/prices/{TICKER}.parquet   (~13 months of daily OHLCV)
+                     Drives momentum: distance from 200d SMA, 52w-high, 6/12m return.
+  2. Info         -> data/info/{TICKER}.json        (yfinance Ticker.get_info())
+                     Drives fundamentals: market cap, margins, revenue growth,
+                     leverage, country, sector/industry names.
+  3. Fundamentals -> data/fundamentals/{TICKER}.json (annual income statement)
+                     Annual revenue series, used to compute rev_growth_ttm — a
+                     smoothed trailing-twelve-month YoY revenue growth (see
+                     load_metrics) so the screen's growth gate doesn't hinge on
+                     a single quarter's comp.
 
 Both caches are age-gated (re-fetched when older than *_MAX_AGE_DAYS) so repeat
 runs in the same week are instant. `--refresh` forces a full re-fetch.
@@ -48,10 +53,12 @@ from universe import get_tickers  # noqa: E402
 _ROOT = os.path.dirname(_HERE)
 PRICES_DIR = os.path.join(_ROOT, "data", "prices")
 INFO_DIR = os.path.join(_ROOT, "data", "info")
+FUND_DIR = os.path.join(_ROOT, "data", "fundamentals")
 
 PRICE_PERIOD = "13mo"        # enough for 200d SMA + 252d (12m) lookback with buffer
 PRICE_MAX_AGE_DAYS = 1
 INFO_MAX_AGE_DAYS = 3
+FUND_MAX_AGE_DAYS = 7        # annual statements change quarterly at most
 RETRIES = 3
 RETRY_SLEEP = 1.5
 WORKERS = 8
@@ -96,7 +103,12 @@ def _download_prices(ticker: str) -> pd.DataFrame | None:
                 progress=False, threads=False,
             )
             if df is None or df.empty:
-                return None
+                # Yahoo signals rate-limiting by returning empty rather than
+                # raising — retry instead of giving up.
+                if attempt == RETRIES:
+                    return None
+                time.sleep(RETRY_SLEEP * attempt)
+                continue
             if isinstance(df.columns, pd.MultiIndex):
                 df.columns = df.columns.get_level_values(0)
             df = df[["Open", "High", "Low", "Close", "Volume"]].copy()
@@ -166,6 +178,57 @@ def fetch_info(ticker: str, refresh: bool = False) -> bool:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Fundamentals (annual revenue series, for TTM revenue growth)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _fund_path(ticker: str) -> str:
+    return os.path.join(FUND_DIR, f"{ticker}.json")
+
+
+def _fund_cache_fresh(ticker: str) -> bool:
+    p = _fund_path(ticker)
+    if not os.path.exists(p) or os.path.getsize(p) == 0:
+        return False
+    return (time.time() - os.path.getmtime(p)) / 86400 < FUND_MAX_AGE_DAYS
+
+
+def _download_fund(ticker: str) -> dict | None:
+    """Annual Total Revenue per fiscal-year end date, newest first."""
+    for attempt in range(1, RETRIES + 1):
+        try:
+            stmt = yf.Ticker(ticker).income_stmt
+            if stmt is None or stmt.empty or "Total Revenue" not in stmt.index:
+                if attempt == RETRIES:
+                    return None
+                time.sleep(RETRY_SLEEP * attempt)
+                continue
+            rev = stmt.loc["Total Revenue"].dropna()
+            annual = {d.strftime("%Y-%m-%d"): float(v) for d, v in rev.items()}
+            return {
+                "annual_revenue": dict(sorted(annual.items(), reverse=True)),
+                "_fetched": time.strftime("%Y-%m-%d %H:%M:%S"),
+            }
+        except Exception as e:
+            if attempt == RETRIES:
+                print(f"  [{ticker}] fundamentals fetch failed: {e}", flush=True)
+                return None
+            time.sleep(RETRY_SLEEP * attempt)
+    return None
+
+
+def fetch_fund(ticker: str, refresh: bool = False) -> bool:
+    if not refresh and _fund_cache_fresh(ticker):
+        return True
+    fund = _download_fund(ticker)
+    if fund is None:
+        return False
+    with open(_fund_path(ticker), "w") as f:
+        json.dump(fund, f)
+    return True
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Universe fetch (parallel)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -173,22 +236,25 @@ def fetch_info(ticker: str, refresh: bool = False) -> bool:
 def fetch_universe(tickers: list[str], refresh: bool = False, workers: int = WORKERS) -> None:
     os.makedirs(PRICES_DIR, exist_ok=True)
     os.makedirs(INFO_DIR, exist_ok=True)
+    os.makedirs(FUND_DIR, exist_ok=True)
 
-    def _one(t: str) -> tuple[str, bool, bool]:
-        return t, fetch_price(t, refresh), fetch_info(t, refresh)
+    def _one(t: str) -> tuple[str, bool, bool, bool]:
+        return t, fetch_price(t, refresh), fetch_info(t, refresh), fetch_fund(t, refresh)
 
-    ok_price = ok_info = 0
+    ok_price = ok_info = ok_fund = 0
     failed: list[str] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(_one, t): t for t in tickers}
         for fut in tqdm(as_completed(futures), total=len(futures), desc="Fetch"):
-            t, p, i = fut.result()
+            t, p, i, fu = fut.result()
             ok_price += p
             ok_info += i
-            if not (p and i):
+            ok_fund += fu
+            if not (p and i):  # fundamentals are optional (growth gate falls back)
                 failed.append(t)
 
-    print(f"\nDone. prices ok={ok_price}/{len(tickers)}  info ok={ok_info}/{len(tickers)}", flush=True)
+    print(f"\nDone. prices ok={ok_price}/{len(tickers)}  info ok={ok_info}/{len(tickers)}"
+          f"  fundamentals ok={ok_fund}/{len(tickers)}", flush=True)
     if failed:
         print(f"{len(failed)} tickers missing price and/or info: {', '.join(sorted(failed))}", flush=True)
 
@@ -223,9 +289,32 @@ def _momentum_from_prices(df: pd.DataFrame) -> dict:
     return out
 
 
+def _rev_growth_ttm(ttm_revenue, annual_revenue: dict) -> float:
+    """Smoothed TTM YoY revenue growth: current TTM revenue vs the TTM one year
+    earlier. Yahoo's `totalRevenue` is already trailing-twelve-month; the prior
+    year's TTM isn't directly available (Yahoo returns only ~5 quarters), so
+    interpolate it from the last two fiscal-year totals: with fraction f of a
+    year elapsed since the latest fiscal-year end, prior TTM ≈ A1 + f*(A0 - A1)
+    — exact at a fiscal-year boundary, smooth in between. Far less noisy than
+    the single-quarter YoY in Yahoo's `revenueGrowth`."""
+    if not ttm_revenue or ttm_revenue <= 0 or not annual_revenue:
+        return np.nan
+    fy_ends = sorted(annual_revenue, reverse=True)
+    if len(fy_ends) < 2:
+        return np.nan
+    a0, a1 = annual_revenue[fy_ends[0]], annual_revenue[fy_ends[1]]
+    if not a1 or a1 <= 0 or not a0 or a0 <= 0:
+        return np.nan
+    f = (pd.Timestamp.now() - pd.Timestamp(fy_ends[0])).days / 365.25
+    f = min(max(f, 0.0), 1.0)
+    prior_ttm = a1 + f * (a0 - a1)
+    return float(ttm_revenue) / prior_ttm - 1
+
+
 def load_metrics(tickers: list[str] | None = None) -> pd.DataFrame:
     """One row per ticker: GICS tags + momentum + fundamentals. Cached data only
-    (run fetch_universe first). Tickers missing both price and info are dropped."""
+    (run fetch_universe first). Tickers missing both price and info are dropped
+    (and reported, so silent data loss is visible)."""
     from universe import get_universe
 
     uni = get_universe()
@@ -233,6 +322,7 @@ def load_metrics(tickers: list[str] | None = None) -> pd.DataFrame:
         uni = uni[uni["Ticker"].isin(tickers)]
 
     rows: list[dict] = []
+    no_data: list[str] = []
     for _, u in uni.iterrows():
         t = u["Ticker"]
         row: dict = {
@@ -263,10 +353,28 @@ def load_metrics(tickers: list[str] | None = None) -> pd.DataFrame:
             except Exception:
                 pass
 
+        # Smoothed TTM revenue growth (NaN when statements unavailable — the
+        # screen falls back to the quarterly `revenueGrowth`).
+        row["rev_growth_ttm"] = np.nan
+        fp = _fund_path(t)
+        if os.path.exists(fp):
+            try:
+                with open(fp) as f:
+                    fund = json.load(f)
+                row["rev_growth_ttm"] = _rev_growth_ttm(
+                    row.get("totalRevenue"), fund.get("annual_revenue") or {})
+            except Exception:
+                pass
+
         # Keep only rows with at least a market cap (the minimum the funnel needs).
         if row.get("marketCap"):
             rows.append(row)
+        else:
+            no_data.append(t)
 
+    if no_data:
+        print(f"NOTE: {len(no_data)} universe tickers had no usable cached data "
+              f"and are excluded: {', '.join(sorted(no_data))}", flush=True)
     if not rows:
         return pd.DataFrame()
     return pd.DataFrame(rows).sort_values("marketCap", ascending=False).reset_index(drop=True)

@@ -1,61 +1,65 @@
 [
   {
     "stage": "1 profitable",
-    "in": 502,
-    "out": 409,
-    "dropped": 93
+    "in": 503,
+    "out": 420,
+    "dropped": 83
   },
   {
     "stage": "2 US company",
-    "in": 409,
-    "out": 391,
-    "dropped": 18
+    "in": 420,
+    "out": 399,
+    "dropped": 21
   },
   {
-    "stage": "3 revenue growth>0",
-    "in": 391,
-    "out": 362,
-    "dropped": 29
+    "stage": "3 TTM rev growth>0",
+    "in": 399,
+    "out": 339,
+    "dropped": 60
   },
   {
     "stage": "4 leverage ok",
-    "in": 362,
-    "out": 250,
-    "dropped": 112
+    "in": 339,
+    "out": 240,
+    "dropped": 99
   },
   {
     "stage": "5 below 200d SMA",
-    "in": 250,
-    "out": 102,
-    "dropped": 148
+    "in": 240,
+    "out": 94,
+    "dropped": 146
   },
   {
     "stage": "5b drawdown >=-0.55",
-    "in": 102,
-    "out": 97,
+    "in": 94,
+    "out": 89,
     "dropped": 5
   },
   {
     "stage": "6 op margin>sector med",
-    "in": 97,
-    "out": 45,
-    "dropped": 52
+    "in": 89,
+    "out": 42,
+    "dropped": 47
   },
   {
     "stage": "7 0<fwdPE<35",
-    "in": 45,
-    "out": 44,
+    "in": 42,
+    "out": 41,
     "dropped": 1
   },
   {
     "stage": "8 niche leaders (N=2,R=0.2)",
-    "out": 40,
+    "in": 41,
+    "out": 33,
+    "dropped": 8,
     "leaders_per_subindustry": 2,
     "coleader_ratio": 0.2
   },
   {
     "stage": "9 trim to target",
-    "out": 40,
+    "in": 33,
+    "out": 33,
+    "dropped": 0,
     "target": 50,
     "trimmed": false
   }

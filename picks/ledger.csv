@@ -1,0 +1,23 @@
+date,mode,kind,rank,ticker,price_at_pick,base_target,base_by,bull_target,bull_by,exit_price,thesis,source
+2026-06-21,momentum,single,1,HWM,277.66,333,2027-H2,402,2027-Q4,222,"Irreplaceable single-crystal turbine-blade oligopoly gating the entire jet-engine ramp; below analyst mean",output/momentum/final_pick.md
+2026-06-23,momentum,rank10,1,GOOGL,368,,,,,,"AI full-stack winner; 20/20 ballots",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,2,AVGO,411,,,,,,"Custom-ASIC + networking backlog; 20/20 ballots",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,3,MU,1134,,,,,,"HBM shortage; above analyst mean (move partly run)",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,4,LLY,1099,,,,,,"GLP-1 demand surge; supply-constrained",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,5,GE,358,,,,,,"$211B engine backlog; priced near target",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,6,KLAC,260,,,,,,"Process-control monopoly; trades above target",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,7,NVDA,211,,,,,,"AI compute shortage; +42% to mean target",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,8,HWM,278,,,,,,"Superalloy blade oligopoly (the 06-21 single pick)",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,9,LRCX,389,,,,,,"NAND/HBM etch-deposition leverage; above target",output/momentum/final_ranking.md
+2026-06-23,momentum,rank10,10,SNDK,2185,,,,,,"NAND shortage beta; wildest data/highest risk",output/momentum/final_ranking.md
+2026-06-29,dip,rank10,1,SPGI,410.92,,,,,,"Ratings duopoly at decade-cheap 18.5x fwd; July-1 spinoff unlock",output/dip/final_ranking.md
+2026-06-29,dip,rank10,2,MSFT,379.40,,,,,,"Fortress compounder marked down on AI-capex optics",output/dip/final_ranking.md
+2026-06-29,dip,rank10,3,CBOE,249.10,,,,,,"Un-clonable SPX/VIX franchise; prediction-market scare",output/dip/final_ranking.md
+2026-06-29,dip,rank10,4,META,577.22,,,,,,"3B-user ad monopoly punished for capex raise",output/dip/final_ranking.md
+2026-06-29,dip,rank10,5,VEEV,153.30,,,,,,"Debt-free regulated-SaaS #1 at cheapest-ever multiple",output/dip/final_ranking.md
+2026-06-29,dip,rank10,6,ISRG,406.78,,,,,,"Robot-surgery monopoly; fell on a raised-guide beat",output/dip/final_ranking.md
+2026-06-29,dip,rank10,7,VST,163.75,,,,,,"AI-power thesis intact vs DeepSeek-panic derating",output/dip/final_ranking.md
+2026-06-29,dip,rank10,8,BKNG,171.78,,,,,,"OTA leader de-rated on AI-disintermediation fear",output/dip/final_ranking.md
+2026-06-29,dip,rank10,9,NFLX,77.38,,,,,,"Streaming #1 sold off on guidance hold; ad tier second act",output/dip/final_ranking.md
+2026-06-29,dip,rank10,10,ZTS,78.71,,,,,,"Animal-health #1 at ~11x; flagged as value-trap watch",output/dip/final_ranking.md
+2026-06-29,dip,single,1,SPGI,410.92,525,2027-H1,575,2027-H2,345,"Ratings duopoly + index monopoly at 10th-percentile valuation; issuance trough is cyclical; spinoff completes 2026-07-01",output/dip/final_pick.md
