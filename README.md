@@ -33,14 +33,14 @@ and the same scripts, switched by `screen.py --mode`:
 
 ## Pipeline
 
-| Step | Script                                    | What it does                                                                                                                                             |
-| ---- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | `scripts/universe.py`                     | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                                   |
-| 2    | `scripts/fetch.py`                        | Per-ticker OHLCV (momentum + drawdown), yfinance fundamentals snapshot, and annual revenue series (for TTM growth). Threaded, retrying, age-cached.      |
-| 3    | `scripts/screen.py --mode {momentum,dip}` | The deterministic funnel → `output/<mode>/shortlist.json`.                                                                                               |
-| 4a   | `.claude/skills/stock-pick-momentum/`     | Momentum AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/momentum/final_pick.md` + ledger row(s).                 |
-| 4b   | `.claude/skills/stock-pick-dip/`          | Dip AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/dip/final_pick.md` + ledger row(s).                           |
-| 5    | `scripts/scorecard.py`                    | The feedback loop: scores every row of `picks/ledger.csv` — return since pick vs the writeup's target and vs SPY over the same window.                   |
+| Step | Script                                    | What it does                                                                                                                                        |
+| ---- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | `scripts/universe.py`                     | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                              |
+| 2    | `scripts/fetch.py`                        | Per-ticker OHLCV (momentum + drawdown), yfinance fundamentals snapshot, and annual revenue series (for TTM growth). Threaded, retrying, age-cached. |
+| 3    | `scripts/screen.py --mode {momentum,dip}` | The deterministic funnel → `output/<mode>/shortlist.json`.                                                                                          |
+| 4a   | `.claude/skills/stock-pick-momentum/`     | Momentum AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/momentum/final_pick.md` + ledger row(s).            |
+| 4b   | `.claude/skills/stock-pick-dip/`          | Dip AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/dip/final_pick.md` + ledger row(s).                      |
+| 5    | `scripts/scorecard.py`                    | The feedback loop: scores every row of `picks/ledger.csv` — return since pick vs the writeup's target and vs SPY over the same window.              |
 
 ## The deterministic funnel (`screen.py`)
 
@@ -83,7 +83,7 @@ cross-sectional percentile ranks, and is mode-specific:
   TTM revenue growth (15%), low leverage / survival (10%) — rebound room +
   quality + balance-sheet durability, deliberately **not** momentum.
 
-(Net-cash companies with no usable EBITDA rank as the *best* balance sheets in
+(Net-cash companies with no usable EBITDA rank as the _best_ balance sheets in
 the leverage term, not neutral.)
 
 ### The "biggest in its niche" rule (stage 8)
@@ -103,9 +103,9 @@ So stage 8 keeps the **union of two rules** per sub-industry:
 
 Both measures are computed **against the full S&P 500 universe, not the funnel
 survivors**. This matters most in dip mode: the true #1 of a niche is usually
-*not* in a dip, and a survivor-relative rule would crown the #4 name "leader"
+_not_ in a dip, and a survivor-relative rule would crown the #4 name "leader"
 just because its betters failed a gate. Measured against the universe, a dip
-candidate must be a *genuine* top-2/co-leader of its niche that happens to be
+candidate must be a _genuine_ top-2/co-leader of its niche that happens to be
 dipping (e.g. MSFT, WMT), not a pretender.
 
 The ratio rule is _proportional_, so it adapts to every sector instead of forcing
@@ -217,3 +217,5 @@ Research / educational tooling. Not financial advice. Data from third-party
 sources may be stale or wrong — verify before acting.
 
 (Session breadcrumbs for past runs live in `NOTES.md`.)
+
+Fable session: claude --resume 52eab3f4-f5cf-4466-9856-6dee096ace57
