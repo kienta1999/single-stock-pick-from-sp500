@@ -21,3 +21,13 @@ date,mode,kind,rank,ticker,price_at_pick,base_target,base_by,bull_target,bull_by
 2026-06-29,dip,rank10,9,NFLX,77.38,,,,,,"Streaming #1 sold off on guidance hold; ad tier second act",output/dip/final_ranking.md
 2026-06-29,dip,rank10,10,ZTS,78.71,,,,,,"Animal-health #1 at ~11x; flagged as value-trap watch",output/dip/final_ranking.md
 2026-06-29,dip,single,1,SPGI,410.92,525,2027-H1,575,2027-H2,345,"Ratings duopoly + index monopoly at 10th-percentile valuation; issuance trough is cyclical; spinoff completes 2026-07-01",output/dip/final_pick.md
+2026-07-02,momentum,rank10,1,AVGO,369.34,480,2027-Q2,600,2027-Q4,295,"Custom-ASIC #1 with 3x book-to-bill; IS the in-sourcing vehicle — immune to the trap",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,2,MU,1032.28,1300,2027-Q2,1800,2027-Q4,775,"HBM sold out CY26 binding at 6.9x fwd; purest quantified shortage, cycle-clock risk",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,3,NVDA,197.58,260,2027-Q2,330,2027-Q4,150,"AI shortage epicenter, cheapest mega-AI, uncrowded chart; ASIC in-sourcing trap flagged",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,4,HWM,267.41,,,,,,"Single-crystal airfoil duopoly gating every engine ramp; only name in all four ballots' top 7",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,5,GE,374.94,,,,,,">$210B backlog certified engine duopoly; flagged above Street mean",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,6,LLY,1191.74,,,,,,"60% GLP-1 share + first oral GLP-1 launched; oral-race and IRA flags",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,7,SNDK,2032.22,,,,,,"$42B contracted through 2028 but +4381% 12-mo and above Street mean; priced-in flag",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,8,CDNS,377.73,,,,,,"EDA duopoly toll booth, record $8B backlog; benefits from in-sourcing; durable not explosive",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,9,CAT,991.41,,,,,,"$63B backlog, gensets sold out through 2027; above-mean valuation flag on a cyclical",output/momentum/final_ranking.md
+2026-07-02,momentum,rank10,10,FCX,60.53,,,,,,"Copper deficit + 50% US tariff at 15x; Grasberg outage and surplus-forecast flags",output/momentum/final_ranking.md
