@@ -211,6 +211,40 @@ This is a _current-snapshot_ screen, so unlike the sibling
 `ml-stock-forward-return` project it needs no point-in-time membership history
 or SEC XBRL pipeline.
 
+## Roadmap / TODO
+
+- [ ] **Backtest the deterministic funnel point-in-time** (the big one). The
+      ledger only starts 2026-06-21, so `scorecard.py` needs years to judge the
+      doctrine. But the sibling `ml-stock-forward-return` repo already has
+      everything needed to backtest the _deterministic half_ historically:
+      point-in-time S&P 500 membership (1996+), per-ticker OHLCV back to 2005,
+      XBRL fundamentals (TTM income, D/E, revenue growth), and sectors.
+      Re-implement `screen.py`'s gates as point-in-time functions over that
+      panel, run the funnel monthly from ~2012 (post-XBRL coverage), hold each
+      shortlist 6–12 months, measure vs SPY. Answers whether
+      "profitable + growing + low debt + price gate + niche leader" has alpha
+      _before_ the AI layer touches it — if the shortlist alone beats SPY, the
+      panel only needs to not subtract value; if it doesn't, that's even more
+      important to know. (~2–3 days, mirrored as a cross-project TODO in that
+      repo's README.)
+- [ ] **Third strategy: `--mode insider`.** Screen for cluster insider buying
+      (multiple officers, direct open-market P transactions, meaningful net
+      dollars — the Form 4 bulk pipeline in `ml-stock-forward-return/scripts/insider.py`
+      already downloads this) + the shared quality gates, then a
+      `/stock-pick-insider` skill researches _why_ insiders are buying. Panel
+      lenses: conviction-buyer / opportunist-vs-routine / bagholder-skeptic /
+      moat. A genuinely different signal source than momentum or dip.
+- [ ] **Hybrid mode: AI panel on the ML model's picks.** Run the sibling repo's
+      `today.py`, take the top ~15 by predicted return, and hand them to the
+      shared research + panel protocol. The ML model finds statistical
+      anomalies; the AI explains and vetoes them. Disagreements between the two
+      projects are the most interesting output.
+- [ ] **Exit discipline for the ledger.** Picks have entry prices and targets
+      but no exit rules, so the scorecard can only ever show unrealized drift.
+      Add exit logic to `scorecard.py` + ledger columns: closed-at-target,
+      stopped (e.g. −25% vs entry), or time-expired (e.g. 18 months past
+      `base_by`). Only then does a realized-return track record accumulate.
+
 ## Disclaimer
 
 Research / educational tooling. Not financial advice. Data from third-party
