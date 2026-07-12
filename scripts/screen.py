@@ -30,6 +30,13 @@ Funnel (each stage prints how many names it drops):
                        dip:      price BELOW its 200-day SMA, AND drawdown from
                                  the 52-week high no worse than DIP_DRAWDOWN_FLOOR
   6. Strong margins    operating margin above the company's GICS-sector median
+  6b. Earnings quality dip only, soft gate (--no-eq-gate disables): drop names
+                       with 2+ earnings-quality red flags (Sloan accruals,
+                       cash conversion, receivables/inventory vs revenue — the
+                       quantifiable value-trap signature; see fetch.py). One
+                       flag never gates; every flag penalizes the composite
+                       score slightly in BOTH modes and rides into
+                       shortlist.json as an `earnings_quality` block.
   7. Forward profit    0 < forward P/E < MAX_FORWARD_PE — positive forward
                        earnings (makes money next year) and not an absurd
                        valuation; NaN forward P/E is dropped (conservative,
@@ -180,33 +187,62 @@ def _rank_pct(s: pd.Series, ascending: bool = True) -> pd.Series:
     return r.fillna(0.5)
 
 
-def _composite_score(df: pd.DataFrame, mode: str = "momentum") -> pd.Series:
-    """Rank-based blend (scale-robust, NaN-tolerant). Higher = more attractive.
-    Used only to trim/rank, never to gate.
+# Composite weight tables (documented in README — keep in sync). Each metric
+# maps to (weight, ascending) for _rank_pct; weights per mode MUST sum to 1.0
+# (asserted below).
+#   momentum: growth and 12-month momentum first, then quality, then valuation
+#             headroom — the explosive-compounder thesis.
+#   dip:      rebound headroom (analyst upside) and drawdown depth first, then
+#             quality and balance-sheet survival — the reboundable-dip thesis.
+#             Deliberately does NOT reward momentum (beaten down by construction).
+COMPOSITE_WEIGHTS = {
+    "momentum": {
+        "rev_growth": (0.30, True),
+        "ret_12m": (0.20, True),
+        "operatingMargins": (0.15, True),
+        "returnOnEquity": (0.15, True),
+        "analyst_upside": (0.10, True),
+        "net_debt_ebitda_rankable": (0.10, False),  # less leverage better
+    },
+    "dip": {
+        "analyst_upside": (0.25, True),             # headroom to mean target
+        "dist_52w_high": (0.20, False),             # more beaten-down = more room
+        "operatingMargins": (0.15, True),           # quality intact
+        "returnOnEquity": (0.15, True),             # quality intact
+        "rev_growth": (0.15, True),                 # still growing (not a trap)
+        "net_debt_ebitda_rankable": (0.10, False),  # survival: less leverage better
+    },
+}
+# Earnings-quality penalty on the composite (both modes): percentile points off
+# per red flag, capped. A penalty, not a weight — flags are sparse and the
+# composite must stay a 0-1 percentile blend for the un-flagged majority.
+EQ_PENALTY_PER_FLAG = 0.03
+EQ_PENALTY_CAP = 0.06
 
-    momentum: reward growth and 12-month momentum first, then quality, then
-              valuation headroom — the explosive-compounder thesis.
-    dip:      reward rebound headroom (analyst upside) and depth of the drawdown,
-              then quality and balance-sheet survival — the reboundable-dip
-              thesis. Deliberately does NOT reward momentum (these names are
-              beaten down by construction)."""
-    if mode == "dip":
-        return (
-            0.25 * _rank_pct(df["analyst_upside"])                  # headroom to mean target
-            + 0.20 * _rank_pct(df["dist_52w_high"], ascending=False)  # more beaten-down = more room
-            + 0.15 * _rank_pct(df["operatingMargins"])             # quality intact
-            + 0.15 * _rank_pct(df["returnOnEquity"])               # quality intact
-            + 0.15 * _rank_pct(df["rev_growth"])                   # still growing (not a trap)
-            + 0.10 * _rank_pct(df["net_debt_ebitda_rankable"], ascending=False)  # survival: less leverage better
-        )
-    return (
-        0.30 * _rank_pct(df["rev_growth"])
-        + 0.20 * _rank_pct(df["ret_12m"])
-        + 0.15 * _rank_pct(df["operatingMargins"])
-        + 0.15 * _rank_pct(df["returnOnEquity"])
-        + 0.10 * _rank_pct(df["analyst_upside"])
-        + 0.10 * _rank_pct(df["net_debt_ebitda_rankable"], ascending=False)  # less leverage better
-    )
+
+def _n_eq_flags(df: pd.DataFrame) -> pd.Series:
+    """Red-flag count per row, for the 6b gate and the composite penalty.
+    Financials are exempt (count 0): banks/insurers structurally 'fail'
+    CFO/NI and receivables-vs-revenue (their receivables are loans, their
+    cashflow isn't working-capital-driven) — the working-capital framework
+    doesn't apply. Their metrics still ride into shortlist.json so the
+    research brief can interrogate them."""
+    if "eq_flags" not in df.columns:
+        return pd.Series(0, index=df.index)
+    n = df["eq_flags"].fillna("").map(lambda s: len([f for f in str(s).split(",") if f]))
+    return n.where(df["gics_sector"] != "Financials", 0)
+
+
+def _composite_score(df: pd.DataFrame, mode: str = "momentum") -> pd.Series:
+    """Rank-based blend (scale-robust, NaN-tolerant) minus the earnings-quality
+    penalty. Higher = more attractive. Used only to trim/rank, never to gate."""
+    weights = COMPOSITE_WEIGHTS[mode]
+    total = sum(w for w, _ in weights.values())
+    assert abs(total - 1.0) < 1e-9, f"{mode} composite weights sum to {total}, not 1.0"
+    score = sum(w * _rank_pct(df[col], ascending=asc)
+                for col, (w, asc) in weights.items())
+    penalty = (_n_eq_flags(df) * EQ_PENALTY_PER_FLAG).clip(upper=EQ_PENALTY_CAP)
+    return score - penalty
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -223,6 +259,7 @@ def run_screen(
     trim: bool = True,
     mode: str = "momentum",
     dip_drawdown_floor: float = DEFAULT_DIP_DRAWDOWN_FLOOR,
+    eq_gate: bool = True,
 ) -> tuple[pd.DataFrame, list[dict]]:
     df = load_metrics()
     if df.empty:
@@ -274,6 +311,19 @@ def run_screen(
     sector_median = df.groupby("gics_sector")["operatingMargins"].transform("median")
     strong_margin = df["operatingMargins"] > sector_median
     df = stage("6 op margin>sector med", strong_margin.fillna(False), df)
+
+    # 6b. Earnings quality (dip mode only, soft gate): a name triggering 2+ of
+    #     the red flags (high accruals / low cash conversion / receivables or
+    #     inventory outrunning revenue — see fetch.py) is the quantitative
+    #     signature of the value trap the dip doctrine hunts. ONE flag never
+    #     gates (business-model context needed — that's the research brief's
+    #     job); flags always feed the composite penalty in both modes.
+    #     Disable with --no-eq-gate.
+    if mode == "dip" and eq_gate:
+        n_flags = _n_eq_flags(df)
+        for _, r in df[n_flags >= 2].iterrows():
+            print(f"  (eq gate: dropping {r['ticker']} — flags: {r['eq_flags']})", flush=True)
+        df = stage("6b earnings quality", n_flags < 2, df)
 
     # 7. Forward profitability + valuation sanity. 0 < forwardPE enforces
     #    positive forward earnings ("makes money next year"); the high ceiling is
@@ -340,6 +390,7 @@ CSV_COLS = [
     "rev_growth_ttm", "revenueGrowth", "operatingMargins", "profitMargins", "returnOnEquity",
     "net_debt_ebitda", "dist_sma200", "dist_52w_high", "ret_12m", "analyst_upside",
     "trailingPE", "forwardPE", "recommendationKey",
+    "accrual_ratio", "cfo_ni", "eq_flags",
 ]
 
 _DOCTRINE = {
@@ -369,6 +420,16 @@ def _write_outputs(df: pd.DataFrame, funnel: list[dict], mode: str = "momentum")
 
     json_path = os.path.join(output_dir, "shortlist.json")
     records = json.loads(df.replace({np.nan: None}).to_json(orient="records"))
+    # Nest the flat earnings-quality fields into one block per record; a
+    # missing metric stays an explicit null with the reason in `note`.
+    from fetch import EQ_FIELDS
+    for rec in records:
+        flags = rec.pop("eq_flags", None) or ""
+        rec["earnings_quality"] = {
+            **{k: rec.pop(k, None) for k in EQ_FIELDS},
+            "flags": [f for f in flags.split(",") if f],
+            "note": rec.pop("eq_note", None),
+        }
     payload = {
         "generated": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
         "mode": mode,
@@ -419,6 +480,10 @@ def main() -> None:
                          "~25%% of NVDA, drops small also-rans). Set to 1.0 to "
                          "disable and rely on top-N alone.")
     ap.add_argument("--no-trim", action="store_true", help="Keep all category leaders (skip the stage-9 trim).")
+    ap.add_argument("--no-eq-gate", action="store_true",
+                    help="Dip mode only: disable the stage-6b earnings-quality "
+                         "soft gate (2+ red flags drops a name). Flags still "
+                         "penalize the composite and appear in the shortlist.")
     args = ap.parse_args()
 
     max_forward_pe = args.max_forward_pe
@@ -434,6 +499,7 @@ def main() -> None:
         trim=not args.no_trim,
         mode=args.mode,
         dip_drawdown_floor=args.dip_drawdown_floor,
+        eq_gate=not args.no_eq_gate,
     )
     _write_outputs(df, funnel, mode=args.mode)
 

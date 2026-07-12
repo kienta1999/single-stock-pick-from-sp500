@@ -105,6 +105,16 @@ batch** in parallel (single message, multiple `Agent` calls; model per the
 subagent policy above). Give each subagent the **skill's research brief** with
 its batch of tickers filled in.
 
+**Earnings-quality flags:** for any batch ticker whose `shortlist.json` record
+has a non-empty `earnings_quality.flags` list, append this to its brief:
+> The deterministic screen raised earnings-quality flag(s) for TICKER:
+> [flags + the metric values]. Explain each: is there a benign business-model
+> reason (e.g. SaaS deferred revenue, an insurer's float, a one-off working
+> capital swing) or is earnings running ahead of cash — the value-trap
+> signature? Give a one-line verdict per flag.
+This turns the screen's number into a narrative check; the panel sees the
+explanation, not just the flag.
+
 Collect the returned dossiers. Assemble a single consolidated **research
 dossier** (markdown) covering all ~12-15 names with their metrics + findings +
 scores. Save it to `OUT/research_dossier.md`.
@@ -168,7 +178,13 @@ You (the orchestrator) now decide. Do NOT just count votes mechanically:
 4. Sanity-check the winner against the hard data in `OUT/shortlist.json` (it
    must still pass the doctrine — don't override the screen).
 5. Run **Phase 3.5 verification** on the tentative winner.
-6. Choose **exactly one** final pick.
+6. Build the winner's three scenarios and probabilities (see the writeup
+   template below) and check the **EV guardrail**: probability-weighted EV
+   must exceed the current price by **+15%** (12–18mo). Below it → publish as
+   **"pass — best of a weak field"**: still write the file explaining why the
+   field is weak, append a `kind=pass` ledger row, and recommend deploying
+   nothing. The pass is a first-class outcome, not a failure of the run.
+7. Otherwise choose **exactly one** final pick.
 
 Write `OUT/final_pick.md` with these **common sections**, interleaved with the
 skill's doctrine-specific sections where its SKILL.md says:
@@ -176,14 +192,47 @@ skill's doctrine-specific sections where its SKILL.md says:
 - **THE PICK:** ticker, company, sector/sub-industry, current market cap.
 - **One-paragraph thesis** in plain language.
 - *(the skill's doctrine-specific evidence sections)*
-- **Return scenario + price targets:** base vs bull case over 12-18 months,
-  with the reasoning. Include an explicit **price-target table** with the
-  current price, a **base-case target (price + % + by when)**, a **bull-case
-  target (price + % + by when)**, and a **downside / thesis-break exit price**.
-  Derive the targets from the scenario %s and anchor them to the current price
-  and the analyst mean target in `shortlist.json` — and if the stock trades
-  *above* the analyst mean target, say so honestly. Label every number a
-  research scenario, not a guarantee.
+- **Scenarios & expected value** — three scenarios, each a **bottoms-up
+  build**, not a bare multiple. Show the math at the driver level (the
+  doctrine's KPIs: e.g. HBM bits × ASP, contract volume × rate-per-contract),
+  anchored to the trailing-four-quarter baseline and historical highs/lows:
+  - **Bear (price + % + by when):** what breaks, quantified. The bear target
+    doubles as the **stop** — `scorecard.py` enforces it (WS-6), so write a
+    price you would actually exit at.
+  - **Base (price + % + by when):** the most likely path.
+  - **Bull (price + % + by when):** what has to go right — if multiple things
+    must go right *simultaneously*, say so; that compounds the risk.
+  - **Probabilities with reasoning — never a default 25/50/25.** One paragraph
+    justifying the weights: weight bull higher when recent quarters are
+    accelerating, bear higher when headwinds are intensifying or management
+    credibility is weak. Honesty clause: if the bear case is the most probable
+    scenario, say so plainly.
+  - **Expected value:** `EV = p_bear×bear + p_base×base + p_bull×bull`,
+    compared to the current price. **EV guardrail: if EV upside < +15% over
+    12–18 months, this run publishes as "pass — best of a weak field"** — no
+    actionable pick, a `kind=pass` ledger row instead (see Ledger). The panel
+    and orchestrator must treat "buy nothing" as a legitimate, first-class
+    outcome of the run.
+  - **Market-implied scenario:** one line on whether the current price sits
+    closest to bear, base, or bull. A price already at the bull case is a red
+    flag even for a great business. If the stock trades *above* the analyst
+    mean target in `shortlist.json`, say so honestly.
+  Label every number a research scenario, not a guarantee.
+- **Key swing factors** — the 3–5 variables that decide bear vs bull. These
+  become the pick's monitoring checklist and feed the thesis-break exit
+  triggers below.
+- **EPIC driver table** — name the thesis's **2–3 primary drivers** (not 20
+  equal points) and pass each through four columns with ✓/—:
+  **E**ffect (moves value materially) / **P**redictability (an evidence-based
+  view is formable) / **I**ndependence (the market systematically mis-weights
+  it) / **C**onsensus-gap (how our view differs, falsifiably). Add one line on
+  why these drivers beat the deprioritized ones. A thesis with no consensus
+  gap is just buying beta — say so if that's what the table shows.
+- **Sizing note (from `POLICY.md`)** — echo the repo's pre-committed policy
+  with this pick's numbers: `raw = (EV/price − 1) / (1 − bear/price)`,
+  `size = min(5%, 2.5 × raw)` of investable capital, halved if earnings are
+  within 10 days, 15% system cap, cash-only. Frame it as the owner's written
+  policy being applied, never personalized advice.
 - **Holding period & exit plan** — a recommended hold horizon and *why*, tied
   to the thesis/catalyst timeline. **Pair the price targets with the timing:**
   "base target $X by ~<date/quarter>; bull target $Y by ~<date> if <catalyst>;
@@ -244,10 +293,15 @@ Write `OUT/final_ranking.md` with:
 - **If forced to ONE** — the single pick the strict trap-veto would land on,
   and why it may differ from the Borda #1. This keeps the doctrine honest even
   in ranked mode.
-- **Return scenarios** — at minimum a base/bull headline for the top 3,
-  anchored to current price and the analyst mean target in `shortlist.json`;
-  flag any name trading *above* its mean target. Label every number a research
-  scenario, not a guarantee.
+- **Return scenarios** — for the top 3: **bear / base / bull targets with
+  dates, probabilities (with one line of reasoning each — never a default
+  25/50/25), and the resulting EV vs the current price**; one line on which
+  scenario the market price currently implies. Anchor to the analyst mean
+  target in `shortlist.json`; flag any name trading *above* its mean target,
+  and flag any top-3 name whose EV upside is below the +15% guardrail (it
+  stays in the ranking — the guardrail only blocks *actionable single picks*
+  — but the reader sees it). Label every number a research scenario, not a
+  guarantee.
 - **What was verified** — the Phase 3.5 claims and their outcomes.
 - **Risk lens & leverage-safety note** across the list — sector concentration,
   which names are highest-risk vs steadier compounders, paired with drawdown
@@ -265,20 +319,39 @@ changed, if R > 1), and point the user to the writeup.
 ## Ledger — every pick gets recorded
 
 `picks/ledger.csv` is the project's scorecard input (scored by
-`scripts/scorecard.py`). After writing the final file, append one row per pick
-(one row in single-pick mode; N rows in ranked mode). Columns:
+`scripts/scorecard.py`, which also runs the exit rules — target hit / stopped
+/ expired). After writing the final file, append one row per pick (one row in
+single-pick mode; N rows in ranked mode; one `kind=pass` row when the EV
+guardrail blocked the pick). Columns:
 
 ```
-date,mode,kind,rank,ticker,price_at_pick,base_target,base_by,bull_target,bull_by,exit_price,thesis,source
+date,mode,kind,rank,ticker,price_at_pick,base_target,base_by,bull_target,bull_by,exit_price,thesis,source,bear_target,bear_by,p_bear,p_base,p_bull,ev_price,next_earnings,size_pct,exit_date,exit_reason
 ```
 
-- `date` — today, YYYY-MM-DD. `mode` — momentum|dip. `kind` — single|rankN
-  (e.g. rank10). `rank` — 1 for single mode.
+- `date` — today, YYYY-MM-DD. `mode` — momentum|dip. `kind` —
+  single|rankN|pass|close. `rank` — 1 for single mode.
 - `price_at_pick` — the current price from `shortlist.json`.
-- `base_target`/`bull_target` + `base_by`/`bull_by` (YYYY-MM or a quarter) and
-  `exit_price` — from the writeup's price-target table; leave empty for ranked
-  names below the top 3 if no scenario was written.
+- `base_target`/`bull_target`/`bear_target` + `base_by`/`bull_by`/`bear_by`
+  (YYYY-MM or a quarter like 2027-Q2), `p_bear`/`p_base`/`p_bull` (must sum to
+  1) and `ev_price` — from the writeup's scenario table. Fill all of them for
+  the single pick and the ranked top 3; leave empty below the top 3.
+  **The bear_target is the stop** — the scorecard stops the pick when a close
+  breaches it. `exit_price` is the legacy downside-trigger column; new picks
+  set `bear_target` and may leave it empty.
+- `next_earnings` — the next scheduled earnings date (YYYY-MM-DD) if known;
+  POLICY.md halves size within 10 days of it.
+- `size_pct` — left EMPTY by the skill (the picker is portfolio-blind); the
+  owner records the actually deployed % at execution time per POLICY.md.
 - `thesis` — one line, CSV-quoted. `source` — the writeup path.
+- **Pass rows** (`kind=pass`): ticker `NONE`, targets empty, thesis = one line
+  on why the field was weak.
+- **Close rows** (`kind=close`) — how a pick exits while keeping the ledger
+  append-only: `date`+`mode`+`ticker` **copy the original pick row's values**
+  (that's the reference key), `exit_price` = the realized fill,
+  `exit_date` = the close date, `exit_reason` = target_hit|stopped|expired|
+  thesis_break|manual. Written by the owner (or on request) when an exit-rule
+  alert from `scorecard.py --check` is acted on — never by mutating the
+  original row.
 
 Create the file with the header if it doesn't exist. Never rewrite or delete
 existing rows — the ledger is append-only history.

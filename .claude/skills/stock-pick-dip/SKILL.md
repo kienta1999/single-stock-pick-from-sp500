@@ -175,6 +175,16 @@ protocol's common template), include:
   disruption risk if it's the pick's main weakness).
 - **The rebound catalyst & timing** — the dated trigger(s) that re-rate it.
 
+**Scenario drivers (for the protocol's bear/base/bull builds):** build the
+three scenarios on the depressed driver recovering (or not) toward its
+trailing baseline × the multiple. Bear = the value trap realized: the dip's
+cause turns out permanent — impaired earnings power at a de-rated multiple
+(what does the business earn if the "temporary" headwind is the new normal?).
+Base = earnings normalize to the pre-dip trajectory and the multiple
+mean-reverts partway to its own history. Bull = the catalyst fires on time
+and the multiple fully re-rates. Weight bear higher when the earnings-quality
+flags or a competitor's guidance hint at share loss rather than macro.
+
 Thesis-break exit triggers here look like: the rebound catalyst slips or
 cancels, the moat is breached, AI/a substitute lands the disruptive blow,
 fundamentals keep deteriorating, the next leg down breaks the drawdown floor.

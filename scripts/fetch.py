@@ -14,6 +14,11 @@ screen, not the full point-in-time XBRL pipeline of ml-stock-forward-return):
                      smoothed trailing-twelve-month YoY revenue growth (see
                      load_metrics) so the screen's growth gate doesn't hinge on
                      a single quarter's comp.
+  4. Quarterly    -> data/quarterly/{TICKER}.json (quarterly IS/CF/BS series)
+                     Drives the earnings-quality red flags (value-trap
+                     detector): Sloan accrual ratio, cash-conversion (CFO/NI),
+                     and receivables/inventory-vs-revenue divergence. Falls
+                     back to annual statements when quarterly is sparse.
 
 Both caches are age-gated (re-fetched when older than *_MAX_AGE_DAYS) so repeat
 runs in the same week are instant. `--refresh` forces a full re-fetch.
@@ -54,11 +59,23 @@ _ROOT = os.path.dirname(_HERE)
 PRICES_DIR = os.path.join(_ROOT, "data", "prices")
 INFO_DIR = os.path.join(_ROOT, "data", "info")
 FUND_DIR = os.path.join(_ROOT, "data", "fundamentals")
+QUART_DIR = os.path.join(_ROOT, "data", "quarterly")
 
 PRICE_PERIOD = "13mo"        # enough for 200d SMA + 252d (12m) lookback with buffer
 PRICE_MAX_AGE_DAYS = 1
 INFO_MAX_AGE_DAYS = 3
 FUND_MAX_AGE_DAYS = 7        # annual statements change quarterly at most
+QUART_MAX_AGE_DAYS = 7
+
+# Earnings-quality red-flag thresholds (value-trap detector; flags, not gates —
+# except dip mode's soft 2-flag gate in screen.py). Sourced from the
+# working-capital methodology in the improvement plan.
+EQ_ACCRUAL_RED = 0.05        # Sloan accruals (NI-CFO)/avg assets above +5%
+EQ_CFO_NI_RED = 0.60         # cash conversion CFO/NI below 0.6
+EQ_RECV_DIV_RED = 0.10       # receivables YoY outrunning revenue YoY by >10pp
+EQ_INV_DIV_RED = 0.15        # inventory YoY outrunning revenue YoY by >15pp
+EQ_INV_MIN_SHARE = 0.05      # inventory divergence only judged when inv > 5% of revenue
+EQ_FIELDS = ["accrual_ratio", "cfo_ni", "recv_rev_divergence", "inv_rev_divergence"]
 RETRIES = 3
 RETRY_SLEEP = 1.5
 WORKERS = 8
@@ -229,6 +246,181 @@ def fetch_fund(ticker: str, refresh: bool = False) -> bool:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Quarterly statements (earnings-quality red flags)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _quart_path(ticker: str) -> str:
+    return os.path.join(QUART_DIR, f"{ticker}.json")
+
+
+def _quart_cache_fresh(ticker: str) -> bool:
+    p = _quart_path(ticker)
+    if not os.path.exists(p) or os.path.getsize(p) == 0:
+        return False
+    return (time.time() - os.path.getmtime(p)) / 86400 < QUART_MAX_AGE_DAYS
+
+
+def _stmt_series(stmt: pd.DataFrame | None, labels: list[str]) -> dict:
+    """First matching row label -> {date: value}, newest first. {} if absent."""
+    if stmt is None or stmt.empty:
+        return {}
+    for label in labels:
+        if label in stmt.index:
+            s = stmt.loc[label].dropna()
+            if not s.empty:
+                return dict(sorted(((d.strftime("%Y-%m-%d"), float(v)) for d, v in s.items()),
+                                   reverse=True))
+    return {}
+
+
+def _download_quarterly(ticker: str) -> dict | None:
+    """Quarterly NI / revenue / CFO / total assets / receivables / inventory
+    series (newest first). When the quarterly CFO or assets history is too
+    sparse for a TTM window, the annual cashflow/balance-sheet series are
+    fetched too so the metrics can fall back."""
+    for attempt in range(1, RETRIES + 1):
+        try:
+            tk = yf.Ticker(ticker)
+            out = {
+                "q_ni": _stmt_series(tk.quarterly_income_stmt, ["Net Income"]),
+                "q_rev": _stmt_series(tk.quarterly_income_stmt, ["Total Revenue"]),
+                "q_cfo": _stmt_series(tk.quarterly_cashflow,
+                                      ["Operating Cash Flow", "Cash Flow From Continuing Operating Activities"]),
+                "q_assets": _stmt_series(tk.quarterly_balance_sheet, ["Total Assets"]),
+                "q_recv": _stmt_series(tk.quarterly_balance_sheet,
+                                       ["Accounts Receivable", "Receivables", "Net Receivables"]),
+                "q_inv": _stmt_series(tk.quarterly_balance_sheet, ["Inventory"]),
+            }
+            if len(out["q_cfo"]) < 4 or len(out["q_ni"]) < 4:
+                out["a_ni"] = _stmt_series(tk.income_stmt, ["Net Income"])
+                out["a_cfo"] = _stmt_series(tk.cashflow,
+                                            ["Operating Cash Flow", "Cash Flow From Continuing Operating Activities"])
+            if len(out["q_assets"]) < 2:
+                out["a_assets"] = _stmt_series(tk.balance_sheet, ["Total Assets"])
+            if not any(out.values()):
+                if attempt == RETRIES:
+                    return None
+                time.sleep(RETRY_SLEEP * attempt)
+                continue
+            out["_fetched"] = time.strftime("%Y-%m-%d %H:%M:%S")
+            return out
+        except Exception as e:
+            if attempt == RETRIES:
+                print(f"  [{ticker}] quarterly fetch failed: {e}", flush=True)
+                return None
+            time.sleep(RETRY_SLEEP * attempt)
+    return None
+
+
+def fetch_quarterly(ticker: str, refresh: bool = False) -> bool:
+    if not refresh and _quart_cache_fresh(ticker):
+        return True
+    q = _download_quarterly(ticker)
+    if q is None:
+        return False
+    with open(_quart_path(ticker), "w") as f:
+        json.dump(q, f)
+    return True
+
+
+def _eq_metrics(ni_ttm, cfo_ttm, avg_assets, recv_yoy=None, rev_yoy=None,
+                inv_yoy=None, inv_share=None) -> dict:
+    """Pure earnings-quality math -> the four metrics + red flags. Any input
+    None -> that metric is None and cannot flag (null-safety doctrine)."""
+    out: dict = {k: None for k in EQ_FIELDS}
+    flags: list[str] = []
+
+    if ni_ttm is not None and cfo_ttm is not None and avg_assets:
+        out["accrual_ratio"] = (ni_ttm - cfo_ttm) / avg_assets
+        if out["accrual_ratio"] > EQ_ACCRUAL_RED:
+            flags.append("HIGH_ACCRUALS")
+    if ni_ttm is not None and cfo_ttm is not None and ni_ttm > 0:
+        out["cfo_ni"] = cfo_ttm / ni_ttm
+        if out["cfo_ni"] < EQ_CFO_NI_RED:
+            flags.append("LOW_CASH_CONVERSION")
+    if recv_yoy is not None and rev_yoy is not None:
+        out["recv_rev_divergence"] = recv_yoy - rev_yoy
+        if out["recv_rev_divergence"] > EQ_RECV_DIV_RED:
+            flags.append("RECEIVABLES_OUTRUN")
+    # Inventory divergence is only meaningful for inventory-heavy models.
+    if (inv_yoy is not None and rev_yoy is not None
+            and inv_share is not None and inv_share > EQ_INV_MIN_SHARE):
+        out["inv_rev_divergence"] = inv_yoy - rev_yoy
+        if out["inv_rev_divergence"] > EQ_INV_DIV_RED:
+            flags.append("INVENTORY_BUILD")
+
+    out["eq_flags"] = ",".join(flags)
+    return out
+
+
+def _ttm_sum(series: dict) -> float | None:
+    vals = list(series.values())
+    return sum(vals[:4]) if len(vals) >= 4 else None
+
+
+def _yoy(series: dict) -> float | None:
+    """Latest point vs the point 4 quarters back; positive base required."""
+    vals = list(series.values())
+    if len(vals) >= 5 and vals[4] and vals[4] > 0:
+        return vals[0] / vals[4] - 1
+    return None
+
+
+def eq_from_cache(ticker: str) -> dict:
+    """Assemble the earnings-quality inputs for one ticker from the quarterly
+    cache (annual fallbacks when sparse) and run _eq_metrics. Always returns
+    all EQ_FIELDS + eq_flags + eq_note (the why, when data was missing)."""
+    empty = {k: None for k in EQ_FIELDS} | {"eq_flags": "", "eq_note": None}
+    p = _quart_path(ticker)
+    if not os.path.exists(p):
+        return empty | {"eq_note": "no quarterly statements cached"}
+    try:
+        with open(p) as f:
+            q = json.load(f)
+    except Exception:
+        return empty | {"eq_note": "quarterly cache unreadable"}
+
+    notes: list[str] = []
+    ni, cfo = _ttm_sum(q.get("q_ni", {})), _ttm_sum(q.get("q_cfo", {}))
+    if ni is None or cfo is None:
+        a_ni = list(q.get("a_ni", {}).values())
+        a_cfo = list(q.get("a_cfo", {}).values())
+        if a_ni and a_cfo:
+            ni, cfo = a_ni[0], a_cfo[0]
+            notes.append("NI/CFO from latest annual (quarterly sparse)")
+        else:
+            ni = cfo = None
+            notes.append("NI/CFO unavailable")
+
+    assets = list(q.get("q_assets", {}).values())
+    if len(assets) >= 2:
+        avg_assets = (assets[0] + assets[min(4, len(assets) - 1)]) / 2
+    else:
+        a_assets = list(q.get("a_assets", {}).values())
+        avg_assets = (sum(a_assets[:2]) / 2) if len(a_assets) >= 2 else (
+            a_assets[0] if a_assets else None)
+        if avg_assets is not None:
+            notes.append("assets from annual")
+        else:
+            notes.append("assets unavailable")
+    if avg_assets is not None and avg_assets <= 0:
+        avg_assets = None
+
+    rev_yoy = _yoy(q.get("q_rev", {}))
+    recv_yoy = _yoy(q.get("q_recv", {}))
+    inv_yoy = _yoy(q.get("q_inv", {}))
+    ttm_rev = _ttm_sum(q.get("q_rev", {}))
+    inv_vals = list(q.get("q_inv", {}).values())
+    inv_share = (inv_vals[0] / ttm_rev) if inv_vals and ttm_rev else None
+
+    out = _eq_metrics(ni, cfo, avg_assets, recv_yoy=recv_yoy, rev_yoy=rev_yoy,
+                      inv_yoy=inv_yoy, inv_share=inv_share)
+    out["eq_note"] = "; ".join(notes) if notes else None
+    return out
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Universe fetch (parallel)
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -237,24 +429,27 @@ def fetch_universe(tickers: list[str], refresh: bool = False, workers: int = WOR
     os.makedirs(PRICES_DIR, exist_ok=True)
     os.makedirs(INFO_DIR, exist_ok=True)
     os.makedirs(FUND_DIR, exist_ok=True)
+    os.makedirs(QUART_DIR, exist_ok=True)
 
-    def _one(t: str) -> tuple[str, bool, bool, bool]:
-        return t, fetch_price(t, refresh), fetch_info(t, refresh), fetch_fund(t, refresh)
+    def _one(t: str) -> tuple[str, bool, bool, bool, bool]:
+        return (t, fetch_price(t, refresh), fetch_info(t, refresh),
+                fetch_fund(t, refresh), fetch_quarterly(t, refresh))
 
-    ok_price = ok_info = ok_fund = 0
+    ok_price = ok_info = ok_fund = ok_quart = 0
     failed: list[str] = []
     with ThreadPoolExecutor(max_workers=workers) as pool:
         futures = {pool.submit(_one, t): t for t in tickers}
         for fut in tqdm(as_completed(futures), total=len(futures), desc="Fetch"):
-            t, p, i, fu = fut.result()
+            t, p, i, fu, qu = fut.result()
             ok_price += p
             ok_info += i
             ok_fund += fu
-            if not (p and i):  # fundamentals are optional (growth gate falls back)
+            ok_quart += qu
+            if not (p and i):  # statements are optional (gates fall back / flag null)
                 failed.append(t)
 
     print(f"\nDone. prices ok={ok_price}/{len(tickers)}  info ok={ok_info}/{len(tickers)}"
-          f"  fundamentals ok={ok_fund}/{len(tickers)}", flush=True)
+          f"  fundamentals ok={ok_fund}/{len(tickers)}  quarterly ok={ok_quart}/{len(tickers)}", flush=True)
     if failed:
         print(f"{len(failed)} tickers missing price and/or info: {', '.join(sorted(failed))}", flush=True)
 
@@ -365,6 +560,10 @@ def load_metrics(tickers: list[str] | None = None) -> pd.DataFrame:
                     row.get("totalRevenue"), fund.get("annual_revenue") or {})
             except Exception:
                 pass
+
+        # Earnings-quality red flags (null-safe: missing statements -> None
+        # metrics + a note, never a silent gate).
+        row.update(eq_from_cache(t))
 
         # Keep only rows with at least a market cap (the minimum the funnel needs).
         if row.get("marketCap"):

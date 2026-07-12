@@ -33,14 +33,14 @@ and the same scripts, switched by `screen.py --mode`:
 
 ## Pipeline
 
-| Step | Script                                    | What it does                                                                                                                                        |
-| ---- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | `scripts/universe.py`                     | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                              |
-| 2    | `scripts/fetch.py`                        | Per-ticker OHLCV (momentum + drawdown), yfinance fundamentals snapshot, and annual revenue series (for TTM growth). Threaded, retrying, age-cached. |
-| 3    | `scripts/screen.py --mode {momentum,dip}` | The deterministic funnel → `output/<mode>/shortlist.json`.                                                                                          |
-| 4a   | `.claude/skills/stock-pick-momentum/`     | Momentum AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/momentum/final_pick.md` + ledger row(s).            |
-| 4b   | `.claude/skills/stock-pick-dip/`          | Dip AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/dip/final_pick.md` + ledger row(s).                      |
-| 5    | `scripts/scorecard.py`                    | The feedback loop: scores every row of `picks/ledger.csv` — return since pick vs the writeup's target and vs SPY over the same window.              |
+| Step | Script                                    | What it does                                                                                                                                                                                                                                                 |
+| ---- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | `scripts/universe.py`                     | Current S&P 500 roster + GICS Sector / Sub-Industry (Wikipedia scrape, cached weekly).                                                                                                                                                                       |
+| 2    | `scripts/fetch.py`                        | Per-ticker OHLCV (momentum + drawdown), yfinance fundamentals snapshot, and annual revenue series (for TTM growth). Threaded, retrying, age-cached.                                                                                                          |
+| 3    | `scripts/screen.py --mode {momentum,dip}` | The deterministic funnel → `output/<mode>/shortlist.json`.                                                                                                                                                                                                   |
+| 4a   | `.claude/skills/stock-pick-momentum/`     | Momentum AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/momentum/final_pick.md` + ledger row(s).                                                                                                                     |
+| 4b   | `.claude/skills/stock-pick-dip/`          | Dip AI skill: web research → Opus 4.8 panel → verification → one pick (or top-N) → `output/dip/final_pick.md` + ledger row(s).                                                                                                                               |
+| 5    | `scripts/scorecard.py`                    | The feedback loop + **exit rules**: classifies every ledger row (AT_TARGET / STOPPED / EXPIRED / OPEN / CLOSED), benchmarks vs SPY, builds the realized track record from `kind=close` rows, and (`--check`) exits non-zero with an ALERTS section for cron. |
 
 ## The deterministic funnel (`screen.py`)
 
@@ -63,6 +63,15 @@ quality gate is shared. Real numbers from a 2026-07 run:
 5b. Drawdown floor        —        89   dip only: ≤55% below the 52-week high
                                         (drops falling knives; --dip-drawdown-floor)
 6. Strong margins         69       42   operating margin > the GICS-sector median
+6b. Earnings quality      —        42   dip only, SOFT gate (--no-eq-gate disables):
+                                        drop names with 2+ red flags — Sloan accruals
+                                        > +5%, CFO/NI < 0.6, receivables (or inventory)
+                                        outrunning revenue — the quantifiable value-trap
+                                        signature. One flag never gates; all flags ride
+                                        into shortlist.json + penalize the composite.
+                                        Financials are exempt from gate + penalty (their
+                                        receivables are loans; CFO/NI isn't working-
+                                        capital-driven) — metrics stay visible
 7. Forward profit         69       41   0 < forward P/E < cap (60 momentum / 35 dip);
                                         tickers dropped for a MISSING estimate are printed
 8. Niche leaders          58       33   per GICS Sub-Industry: top-2 by market cap
@@ -85,6 +94,11 @@ cross-sectional percentile ranks, and is mode-specific:
 
 (Net-cash companies with no usable EBITDA rank as the _best_ balance sheets in
 the leverage term, not neutral.)
+
+Both composites then subtract a small **earnings-quality penalty**: −3
+percentile points per red flag, capped at −6 (flags computed in `fetch.py`
+from quarterly statements; a missing statement is an explicit `null` + note,
+never a silent penalty). The weights are asserted to sum to 1.0 in code.
 
 ### The "biggest in its niche" rule (stage 8)
 
@@ -127,6 +141,8 @@ uv run python scripts/screen.py --mode momentum   # → output/momentum/shortlis
 uv run python scripts/screen.py --mode dip        # → output/dip/shortlist.{json,csv}
 
 uv run python scripts/scorecard.py        # score all past picks vs targets and SPY
+uv run python scripts/scorecard.py --check  # exit-rules alert mode (non-zero exit
+                                            # when a target/stop/expiry fires — cron it)
 ```
 
 (`--mode momentum` is the default, so bare `screen.py` is the momentum screen.)
@@ -143,9 +159,12 @@ Each will (re)build its shortlist if needed, triage to the ~12-15 strongest
 names, fan deep web research out to parallel research subagents, convene a
 4-member Opus 4.8 voting panel, **verify the winner's load-bearing claims with
 an independent web-search pass**, write the final conviction pick (or ranked
-top-N) with its thesis, return scenario, and risks to
-`output/<mode>/final_pick.md` (or `final_ranking.md`), and **append the pick(s)
-to `picks/ledger.csv`** so `scorecard.py` can hold the doctrine accountable.
+top-N) — with **bear/base/bull scenario builds, justified probabilities, an
+expected-value-vs-price check (EV upside < +15% → the run publishes as a
+"pass" and recommends buying nothing), key swing factors, and an EPIC driver
+table** — to `output/<mode>/final_pick.md` (or `final_ranking.md`), and
+**append the pick(s) to `picks/ledger.csv`** so `scorecard.py` can hold the
+doctrine accountable.
 The momentum panel runs supply-chain / growth / quality / contrarian lenses;
 the dip panel runs catalyst / compounder / moat-&-AI-irreplaceability /
 falling-knife-skeptic lenses.
@@ -177,10 +196,13 @@ python scripts/screen.py --max-net-debt-ebitda 2.0    # stricter leverage
 python scripts/screen.py --max-forward-pe 30          # override the forward-valuation cap
 python scripts/screen.py --leaders-per-subindustry 3  # keep top-3 per niche
 python scripts/screen.py --coleader-ratio 0.15        # wider co-leader net
+python scripts/screen.py --mode dip --no-eq-gate      # disable the stage-6b earnings-quality gate
 python scripts/screen.py --no-trim                    # skip the trim-to-target step
 python scripts/fetch.py --refresh                     # ignore caches, re-fetch
 python scripts/fetch.py --tickers MU,NVDA,META        # debug a subset
 python scripts/scorecard.py --mode dip                # score one strategy only
+python scripts/scorecard.py --check                   # alert mode: non-zero exit when a rule fires
+python scripts/scorecard.py --stop-pct 0.2 --grace-days 60  # tighter exit rules
 ```
 
 ## Outputs
@@ -196,10 +218,21 @@ Each mode writes to its own folder, `output/momentum/` or `output/dip/`:
 Plus the cross-mode scorecard:
 
 - `picks/ledger.csv` — append-only record of every pick: date, mode, entry
-  price, base/bull targets with timing, exit price, one-line thesis, source.
-- `scripts/scorecard.py` — reads the ledger, fetches current prices, and prints
-  each pick's return vs its target and vs SPY since the pick date — the only
-  way to know whether any of this beats buying the index.
+  price, **bear/base/bull targets with timing and probabilities, the EV price**
+  (the WS-3 scenario discipline), one-line thesis, source. Exits are appended
+  as `kind=close` rows (realized fill + reason) referencing the original pick
+  by date+mode+ticker — rows are never mutated. Runs where the EV guardrail
+  blocked the pick append a `kind=pass` row.
+- `scripts/scorecard.py` — reads the ledger, fetches current prices, runs the
+  **exit rules** (the recorded bear target is the stop; base target hit →
+  reassess; past `base_by` + 90d grace → expired), prints each pick's return
+  vs target and vs SPY, and aggregates closed picks into the **realized track
+  record** (hit rate, avg win/loss, alpha per mode) — the only way to know
+  whether any of this beats buying the index.
+- `POLICY.md` — the human layer: position sizing (fractional-Kelly-lite with
+  5%-per-pick / 15%-system caps), the no-leverage rule, the manual deployment
+  checklist (the picker itself stays portfolio-blind by design), and the pilot
+  protocol that gates scaling.
 
 ## Data sources
 
@@ -239,11 +272,19 @@ or SEC XBRL pipeline.
       shared research + panel protocol. The ML model finds statistical
       anomalies; the AI explains and vetoes them. Disagreements between the two
       projects are the most interesting output.
-- [ ] **Exit discipline for the ledger.** Picks have entry prices and targets
-      but no exit rules, so the scorecard can only ever show unrealized drift.
-      Add exit logic to `scorecard.py` + ledger columns: closed-at-target,
-      stopped (e.g. −25% vs entry), or time-expired (e.g. 18 months past
-      `base_by`). Only then does a realized-return track record accumulate.
+- [x] **Exit discipline for the ledger** (shipped 2026-07-12). `scorecard.py`
+      now classifies every pick (AT_TARGET / STOPPED / EXPIRED / OPEN /
+      CLOSED / TRACKED / PASS), uses the recorded `bear_target` as the stop
+      (fallback −25%), builds the realized track record from append-only
+      `kind=close` rows, and `--check` exits non-zero for cron alerting.
+      Remaining: actually put it on a cron (the GitHub Actions pattern from
+      `ai-stock-investment`).
+- [ ] **Validate the earnings-quality gate historically.** Stage 6b (dip) and
+      the composite EQ penalty shipped 2026-07-12 as a _soft_ gate on the
+      working-capital methodology's thresholds — but they are untested
+      factors. The point-in-time backtest above must run the dip funnel with
+      and without them; if the gate doesn't improve forward returns, demote
+      it to flag-only permanently.
 
 ## Disclaimer
 
@@ -253,3 +294,4 @@ sources may be stale or wrong — verify before acting.
 (Session breadcrumbs for past runs live in `NOTES.md`.)
 
 Fable session: claude --resume 52eab3f4-f5cf-4466-9856-6dee096ace57
+Built the real-money guardrails — exit rules + realized scorecard (WS-6), sizing policy (WS-7), earnings-quality value-trap flags (WS-1), and bear/base/bull + EV-or-pass writeup discipline (WS-3) — all tested, all uncommitted and awaiting your review: claude --resume bcc1bcb1-4d1d-492b-b195-3c3922350919

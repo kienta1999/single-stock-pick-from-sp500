@@ -150,6 +150,16 @@ protocol's common template), include:
   in-sourcing it or a substitute from bypassing it (or an honest statement of
   the disintermediation risk if it's the pick's main weakness).
 
+**Scenario drivers (for the protocol's bear/base/bull builds):** build the
+three scenarios on the shortage math, not bare multiples — units/capacity ×
+ASP, the backlog-to-revenue conversion rate, and pricing through the cycle.
+Bear = the cycle turns or the trap fires: capacity catches up / pricing rolls
+over / a top customer in-sources — quantify the peak-to-trough earnings hit a
+past cycle actually delivered. Base = the current backlog converts at today's
+pricing. Bull = the shortage extends and price/mix keeps expanding. Weight
+bear higher late-cycle (the doctrine's names are cyclicals; the market-implied
+check matters most here).
+
 Thesis-break exit triggers here look like: backlog shrinking, pricing rolling
 over, margins peaking QoQ, a customer announcing in-sourcing. The
 leverage-safety note should reflect that a high-beta cyclical (like memory) can
