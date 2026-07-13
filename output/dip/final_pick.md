@@ -1,223 +1,240 @@
 # Buy-the-Dip — Final Pick (single-pick mode)
 
-*Generated 2026-07-02 · Mode: single conviction pick · 4-lens Opus panel ·
+*Generated 2026-07-12 · Mode: single conviction pick · 4-lens Opus panel ·
 Screen: dip mode (below 200-day SMA, off 52-week high, profitable + US + growing +
-low-debt + margin-leader + 0<fwdPE<cap + GICS category #1).*
+low-debt + margin-leader + 0<fwdPE<cap + GICS category #1), generated 2026-07-12 12:04.*
 
-*Supersedes the 2026-06-29 single pick (SPGI — see git history and
-`picks/ledger.csv`). SPGI remained in this run's shortlist; its July 1 spinoff
-catalyst has now fired (+8.0% that day), which is precisely why the panel moved on.*
+*Supersedes the 2026-07-02 single pick (CME — see git history and
+`picks/ledger.csv`). CME remained in this run's shortlist and ranked #3 in the
+companion ranking; the pick moved on partly because CME has already re-rated
+from ~$231 at the 07-02 pick to ~$273 by 07-10 (verified) — the dip has partly
+closed — while MSFT's dip has not.*
 
 ---
 
-## THE PICK: CME — CME Group Inc.
+## THE PICK: MSFT — Microsoft Corporation
 
-- **Sector / sub-industry:** Financials / Financial Exchanges & Data
-- **Market cap:** ~$83.5B
-- **Price:** $231.00 (screen close 2026-07-01); ~$236 intraday 2026-07-02
-- **Panel vote:** 2 of 4 first-place votes (the moat lens AND the value-trap veto lens), 4 of 6 weighted points — the clear winner
+- **Sector / sub-industry:** Information Technology / Systems Software
+- **Market cap:** ~$2.86T
+- **Price (screen, 2026-07-12):** $385.10 · **200-day SMA distance:** −12.6% · **52-week drawdown:** ~−31% (verified vs the $555.45 high; screen field showed −28.5%)
+- **Forward P/E:** ~19.9x (screen) / ~21-22x NTM (verified) vs its own recent 32-35x band
+- **Analyst mean target:** ~$560 (screen $559.86; aggregators $560-592) → **+45% upside**
 
-## Thesis
+## One-paragraph thesis
 
-CME Group is a ~99% monopoly on US interest-rate futures whose stock has been
-marked down 27% from its 52-week high on a *competitive scare* — CFTC-blessed
-Kalshi bitcoin perpetuals and the FMX Treasury-futures challenge — while the
-business itself just printed the best quarter in its history: record Q1 2026
-average daily volume of 36.2M contracts (+22% YoY), record revenue of $1.9B
-(+14%), and a record 72.8% adjusted operating margin, with volume records in
-all six asset classes. Its moat is not brand or habit but the physics of
-clearing: the deepest open-interest pool plus cross-margining programs that
-saved customers over $85B per day in margin in Q1 — leaving CME is a
-capital-efficiency penalty no rival (and no AI model) can replicate. At ~18.8x
-forward earnings versus its own historical mid-20s-or-higher norm, you are
-buying an all-time-record earnings machine at a multi-year-low multiple because
-the market fears a threat the franchise has already survived once.
+Microsoft is the highest-quality business in the entire dip screen, marked down
+~31% from its high — its worst start to a year since 2000 — for a reason that is
+about *spending optics, not demand*: AI capex guided to ~$190B for CY2026
+compressed quarterly free cash flow to $15.8B against $31.8B of net income, and
+the market has repriced the stock as if that investment will never earn a
+return. Meanwhile the demand signals are objectively accelerating: Azure grew
+40% in the March quarter, AI revenue passed a $37B annual run-rate (+123% y/y),
+and commercial RPO — contracted future revenue — hit $627B (+99% y/y, ~30%
+converting within 12 months). A 21-22x NTM multiple on the widest-moat mega-cap
+compounder, with a datable catalyst (capex growth flattening while backlog
+converts), is the cleanest "broken price, unbroken business" dislocation in the
+set. Three of four panel lenses — including the value-trap skeptic — made it
+their top pick.
 
 ## Why the dip is temporary, not permanent
 
-- **The P&L contradicts the price.** The drawdown happened *across* the best
-  quarter in company history (Q1 2026 press release, 2026-04-22: record ADV,
-  record revenue, record adjusted operating margin, record adjusted EPS $3.36
-  +20%). A permanently impaired business shows it in the numbers first; CME's
-  numbers are accelerating.
-- **The bear thesis has already been live-tested.** When FMX (BGC/Lutnick's
-  Treasury-futures venue) attacked in 2024-25, its volumes slumped to ~928
-  contracts/day by April 2025 while CME's SOFR complex ran ~9.8M/day, and
-  traders reverted to CME (FOW, 2025-04-11). Note honestly: that stress-test is
-  a 2025 datapoint, not fresh 2026 news — but it is direct empirical evidence
-  that liquidity does not migrate.
-- **The fresh scare is regulatory, not technological or secular.** The May 29,
-  2026 CFTC self-certification of Kalshi's bitcoin perpetual (BTCPERP) hit all
-  exchange stocks; CME sued the CFTC on June 18, 2026 arguing perpetuals are
-  swaps under Dodd-Frank. Whatever the outcome, crypto perps siphon retail
-  speculative flow at the edges — they do not touch the institutional
-  rate-futures core that anchors the earnings.
+The sell-off is a **cash-timing artifact, not a demand problem**. FCF fell
+because capex is front-loaded (data-center build-out, worsened by memory-price
+inflation), while every demand metric accelerated through the drawdown: Azure
++40% (Apr 29, 2026 print, verified), AI run-rate $37B +123% y/y (verified from
+Microsoft's own FY26 Q3 release), RPO $627B +99% (verified; ex-OpenAI +26%).
+Capex is a *choice* management can throttle; contracted backlog is not.
+Businesses get permanently impaired when customers leave — nothing in the bear
+case says customers are leaving. Secondary sentiment weights (Copilot-adoption
+securities suits, Azure's January deceleration scare) are noise items already
+contradicted by the March quarter.
 
 ## The dip depth
 
-- **-27.2% off the 52-week high; -15.9% below the 200-day SMA** (screen,
-  2026-07-01); 12-month return -12.9%.
-- Cause: the Kalshi/prediction-market scare (May 29), the residual FMX
-  competition narrative, and de-rating of the whole exchange complex — all fear
-  of *future* share loss, none of it visible in current volumes, margins, or
-  pricing.
+−12.6% below the 200-day SMA, ~−31% off the 52-week high ($555.45 → ~$385).
+Cause: the January 28, 2026 Q2 print (Azure deceleration + capex guide) started
+it; the ~$190B CY2026 capex guide and the FCF drop to $15.8B sustained it;
+lawsuit headlines added noise. Verified timeline: stock fell ~7% on the January
+print alone.
 
-## Why it's the category leader / why the moat is intact (and AI-proof)
+## Why it's the category leader / why the moat is intact — and why AI cannot disrupt it
 
-- **>99% of on-exchange US interest-rate futures** trade at CME — an
-  effectively uncontested monopoly in its largest segment, plus the deepest
-  global franchises in equity-index, energy, ags, metals, and FX futures.
-- **The moat is a netting pool, not a product.** Open interest begets
-  liquidity begets open interest; and CME's portfolio- and cross-margining
-  programs delivered **>$85B/day in average margin savings in Q1 2026** (total
-  across all six asset classes; the newer CME-FICC/DTCC Treasury cross-margin
-  program — extended to end-user clients April 30, 2026 — adds ~$1-1.5B/day of
-  that). A competitor must convince thousands of institutions to
-  simultaneously abandon those capital savings — this is a switching cost
-  measured in billions of dollars per day.
-- **AI cannot disrupt it — AI trades *through* it.** An AI model can generate
-  trading signals, but it cannot conjure open interest, replicate a regulated
-  clearinghouse's mutualized netting pool, or move the CFTC. More algorithmic
-  trading means more contracts cleared, more volume, more revenue. The
-  disruption vector (prediction markets/perps) attacks retail event-betting
-  flow, not institutional rate hedging.
+Microsoft is #1/#2 in cloud infrastructure and dominant in enterprise
+productivity, with the group's widest moat (panel score 9.5/10): decades of
+enterprise switching costs (Windows/Office/AD/Azure), hyperscale capital
+intensity as a barrier no entrant can match, and the OpenAI partnership +
+Copilot as the distribution layer for AI itself. This is the rare name where
+the disruption technology *is the product*: AI cannot route around Microsoft
+because Microsoft owns the on-ramp — it is the substrate AI is deployed on for
+the enterprise. The honest caveat: the moat's risk is internal (capital
+allocation returns), not competitive displacement.
 
 ## The rebound catalyst & timing
 
-1. **Resolution of the Kalshi/CFTC lawsuit overhang** (filed 2026-06-18, US
-   District Court for D.C.) — a favorable ruling or CFTC clarification directly
-   removes the fear that de-rated the stock. Watch H2 2026 – H1 2027.
-2. **Continued record volumes** — every quarterly print (next: ~late July
-   2026) that shows records while the stock sits at ~18.8x forces the
-   fear-vs-fundamentals gap to close.
-3. **Rate volatility** — any Fed-path surprise (cuts slipping, cuts arriving,
-   auction stress) drives rate-futures ADV straight to a ~73% margin.
-4. **Capital return** — $3.2B returned in Q1 alone (dividends + $536M
-   buybacks); the annual variable dividend (declared ~December) is a recurring
-   sweetener.
+1. **Azure reacceleration confirmed on the next 1-2 prints** (FY26 Q4 lands
+   late July 2026; FY27 Q1 in October). The March quarter already showed 40%.
+2. **RPO conversion** — ~30% of the $627B backlog converts within 12 months
+   (management, Apr 29 2026), mechanically lifting recognized revenue.
+3. **Capex-to-FCF narrative flip** — the first quarter where capex growth
+   flattens while AI revenue accelerates re-rates the stock; CY2026 capex
+   guidance (~$190B) is the peak-spend marker the market is watching.
+4. Secondary de-risking: dismissal/immateriality of the Copilot-adoption suits.
 
-## Return scenario + price targets (12-18 months)
+## Scenarios & expected value (12-18 months) — research scenarios, not guarantees
 
-Research scenarios, not guarantees. Anchors: screen price $231.00 (2026-07-01
-close; ~$236 intraday 2026-07-02), analyst mean target ~$301 (+28% from
-screen; range $209-322, consensus buy) — the stock trades comfortably *below*
-the mean target.
+Bottoms-up anchor: FY26 consensus EPS ~$16.5-17.1 on ~$324-327B revenue; FY27
+EPS ~$18.5-19.3 if Azure holds mid-30s%+ growth and margins hold ~46% operating.
 
-| Scenario | Price | vs $231 | By when | Reasoning |
+- **Bear — $300 by ~2027-06 (−22%).** The trap realized: AI capex proves a
+  structurally lower-return arms race; capex stays elevated past $190B with no
+  revenue acceleration to show for it; Azure decelerates to ~30%; the market
+  de-rates a slower-growth, capital-heavy Microsoft to ~18x on ~$16.5 EPS ≈
+  $300. **This is the stop.**
+- **Base — $490 by ~2027-09 (+27%).** Azure holds 35-40%, capex growth
+  flattens in FY27, FCF re-inflects; FY27 EPS ~$18.8 at a partially-recovered
+  ~26x ≈ $490. The multiple only mean-reverts halfway to its 32-35x band.
+- **Bull — $580 by ~2027-12 (+51%).** Azure visibly reaccelerates on RPO
+  conversion, AI revenue run-rate keeps compounding >100%, and the narrative
+  flips from "capex black hole" to "AI toll road": ~30x on ~$19.3 EPS ≈ $580,
+  in line with the analyst mean ($560-592). Requires two things to go right
+  simultaneously (demand acceleration AND sentiment flip) — hence not the base.
+
+**Probabilities: p(bear)=0.20, p(base)=0.50, p(bull)=0.30.** Reasoning: the
+demand-side evidence is accelerating, not just stable — AI run-rate +123%, RPO
++99%, Azure reaccelerated between the January scare and the April print — which
+justifies a bull weight above a token 25%. The bear keeps a full 20% because
+the FCF compression is real, the $190B guide is unprecedented, and hyperscaler
+overbuild is a genuine industry-wide possibility, not a straw man. Base is the
+single most likely path: spend stays high but backlog conversion makes the
+P&L answer the capex question gradually rather than in one quarter.
+
+**EV = 0.20×300 + 0.50×490 + 0.30×580 = $479 → +24.4% vs $385.10.**
+Passes the +15% EV guardrail. ✔
+
+**Market-implied scenario:** at ~21x NTM — a multiple Microsoft last carried in
+the 2018-2019 era — the current price sits **closest to the bear case**. The
+stock trades far below the analyst mean target ($560), the opposite of a
+priced-for-perfection setup.
+
+## Key swing factors (monitoring checklist)
+
+1. **Azure growth rate** each quarter (thesis needs ≥ mid-30s%; two straight
+   sub-30% quarters breaks it).
+2. **Capex guidance revisions** — another material raise above ~$190B *without*
+   matching revenue acceleration is a bear signal.
+3. **Quarterly FCF trajectory** — the thesis expects re-inflection by mid-2027.
+4. **RPO growth ex-OpenAI** (was +26%) — stalling backlog = demand crack.
+5. **OpenAI relationship economics** — a souring of the partnership terms would
+   dent both the AI halo and the RPO number's quality.
+
+## EPIC driver table
+
+| Driver | E(ffect) | P(redictability) | I(ndependence) | C(onsensus-gap) |
 |---|---|---|---|---|
-| **Base** | **$295** | **+28%** | **~2027-Q2** | Multiple normalizes only partway (to ~21x) on continued record earnings + capital return; matches the Street mean (~$301) |
-| **Bull** | **$330** | **+43%** | **~2027-Q4** | Kalshi overhang clears + elevated rate-vol keeps ADV at records; multiple re-rates toward its historical mid-20s |
-| **Downside / exit** | **$190** | **-18%** | — | The dip deepens into a durable low-vol + perps-traction de-rating; exit rather than average a thesis that isn't working |
+| RPO conversion → Azure/AI revenue acceleration | ✓ | ✓ (contracted, ~30% <12mo) | ✓ (market treats backlog as soft) | ✓ (consensus fears spend; we see contracted demand) |
+| Capex growth flattening → FCF re-inflection | ✓ | — (timing genuinely hard) | ✓ (market extrapolates the FCF dip as permanent) | ✓ (falsifiable: FCF either inflects by mid-2027 or it doesn't) |
+| Multiple mean-reversion 21x → 26-30x | ✓ | — (sentiment-dependent) | — | — (this is beta to the first two, not an independent edge) |
+
+The first two drivers carry the thesis; the third is the payoff mechanism, not
+an edge. These beat deprioritized drivers (Copilot per-seat monetization,
+gaming/LinkedIn) because they are quarterly-observable and contracted. There
+IS a consensus gap: the market is pricing capex as value destruction while the
+backlog says the demand is already sold.
+
+## Sizing note (from `POLICY.md` — the owner's pre-committed policy, not personalized advice)
+
+`raw = (EV/price − 1) / (1 − bear/price) = 0.244 / (1 − 300/385.10) = 0.244 / 0.221 = 1.10`
+`size = min(5%, 2.5 × 1.10) = min(5%, 2.76%) ≈ 2.8%` of investable capital.
+Pilot regime (POLICY.md §1.4): halve again → **~1.4%**. Earnings halving:
+MSFT's FY26 Q4 print is expected in late July 2026 (~2 weeks out, date
+unconfirmed) — if entry happens within 10 days of the confirmed date, halve.
+15% system cap and cash-only rule apply.
 
 ## Holding period & exit plan
 
-**Recommended hold: 12-18 months** — long enough for the lawsuit overhang to
-resolve and for 4-6 more quarterly prints to force the re-rate; the thesis is a
-valuation-normalization story, not a momentum trade.
+**Recommended hold: 12-18 months** (through the FY27 capex-flattening +
+backlog-conversion window). Base target **$490 by ~2027-Q3**; bull target
+**$580 by ~2027-Q4** if Azure reaccelerates and the capex narrative flips.
+**Exit if it closes below the downside trigger $300**, or if any thesis-break
+trigger fires:
 
-- **Base target $295 by ~2027-Q2; bull target $330 by ~2027-Q4** if the Kalshi
-  ruling goes CME's way and rate volatility stays elevated.
-- **Exit at $190** or on any thesis-break trigger below, whichever comes first.
+- Azure growth prints below ~30% for two consecutive quarters.
+- Capex guidance raised materially above ~$190B again with no matching revenue
+  acceleration (the arms-race-confirmed signal).
+- FCF fails to re-inflect by mid-2027.
+- RPO growth ex-OpenAI stalls or declines.
+- The OpenAI partnership terms deteriorate materially.
+- The next leg down breaks the dip screen's drawdown floor (the "falling knife
+  kept falling" signal).
 
-**Thesis-break exit triggers — sell if any fires:**
-
-1. **Volume/OI actually migrates**: FMX or any rival takes >5% of US
-   rate-futures ADV for two consecutive quarters, or CME's rates open interest
-   declines YoY while a competitor's grows — the netting moat would be
-   breached, converting the dip into permanent impairment.
-2. **The perps ruling goes badly AND CME's crypto/retail volumes visibly bleed
-   to Kalshi/Coinbase-style venues** — edge erosion becoming core erosion.
-3. **A structural volume decline**: total ADV falls YoY for two consecutive
-   quarters in a *calm-market* regime — evidence the volatility cycle, not the
-   franchise, was carrying earnings.
-4. **Adjusted operating margin breaks decisively below ~65%** — pricing power
-   eroding under rebate/fee competition.
-5. **The next leg down breaks the drawdown floor** (price through $190) without
-   any fundamental deterioration you can name — the market knows something the
-   thesis doesn't.
-
-**Leverage-safety note (education, not advice).** CME is a low-beta,
-fortress-balance-sheet monopoly, but this is still a knife-catching setup: the
-stock is -27% from its high and can absolutely fall further on a bad court
-headline or a vol collapse, and exchange stocks gap on regulatory news.
-Leverage turns a survivable -18% drawdown-to-exit into a forced liquidation at
-the exact moment the thesis needs patience. Size any position so the downside
-scenario is boring, not fatal; this note is risk education, never a
-recommendation of a specific leverage ratio or position size.
+**Leverage-safety note (education, not advice):** a beaten-down name can keep
+falling before it turns — MSFT fell another ~7% *after* the January print that
+started this dip. Even the highest-quality compounder can sit 20-30% lower for
+quarters while a capex debate resolves. Catching a knife with margin is brutal;
+POLICY.md's cash-only rule exists for exactly this. No specific leverage ratio
+or position size is recommended here.
 
 ## Key risks (the value-trap case)
 
-- **Durable low-volatility regime.** The one input management cannot control.
-  If rates go quiet for years, volumes stagnate and the "cheap" multiple is
-  simply the new fair multiple — a slow grind, not a snap-back.
-- **Regulatory blessing of perpetuals.** If courts/CFTC durably allow
-  perp-style contracts on lightly-regulated venues, the *retail/crypto* edge of
-  CME's flow erodes and the market may keep applying a structural-threat
-  discount even if the rates core is untouched.
-- **Political two-sidedness.** Howard Lutnick — founder of CME's would-be
-  competitor FMX's parent (BGC/Cantor) — is Commerce Secretary; the regulatory
-  wind can blow against CME.
-- **Concentration in one earnings driver**: rate-futures dominance is ~the
-  whole bull case; there is no second act if it wavers (Google-style optionality
-  does not exist here).
+1. **AI capex arms race is structural** — hyperscalers overbuild; returns on
+   the ~$190B never clear the cost of capital; FCF and ROIC stay permanently
+   depressed and 21x proves *fair*, not cheap. This is the one bear case that
+   is real rather than sentiment. Probability-weighted at 20%.
+2. **Azure share loss to AWS/Google** in the AI-workload era — not currently
+   in evidence (40% growth), but the January scare shows how fast the market
+   punishes any deceleration.
+3. **OpenAI dependency** — a meaningful chunk of RPO relates to OpenAI
+   commitments; if OpenAI's economics sour, backlog quality degrades.
+4. Copilot-adoption securities suits — likely noise, but a discovery surprise
+   would hit the AI-monetization narrative.
 
-## What was verified (Phase 3.5, 2026-07-02)
+## What was verified (Phase 3.5)
 
-| Claim | Verdict |
-|---|---|
-| Record Q1 2026: ADV 36.2M (+22%), revenue $1.9B (+14%), adj op margin 72.8% record, records in all six asset classes | **CONFIRMED** (CME PR + 8-K, 2026-04-22) |
-| Kalshi BTCPERP self-certified under CFTC rules May 29, 2026; CME sued the CFTC June 18, 2026 (perpetuals are swaps under Dodd-Frank) | **CONFIRMED** (court/press, June 2026) |
-| FMX volumes slumped, traders reverted to CME | **CONFIRMED but re-dated** — the report is FOW, April 2025 (FMX ~928 contracts/day vs CME SOFR ~9.8M/day), a 2025 stress-test, not fresh 2026 news |
-| Valuation: ~18.8x forward vs historical mid-20s+; mean target ~$300-302 (+28% from ~$236 on 2026-07-02) | **CONFIRMED** (price $236.20 intraday 7/2; claim's "17-18x" corrected to ~18.8x) |
-| Moat: >99% of on-exchange US rate futures; >$85B/day margin savings | **CONFIRMED with attribution fix** — $85B/day is the *total* across all cross/portfolio-margining programs; the FICC/DTCC Treasury program alone is ~$1-1.5B/day |
+Verifier subagent, 2026-07-12, primary sources (Microsoft FY26 Q3 8-K/PR Apr 29
+2026, CNBC, stockanalysis.com/MarketBeat ~Jul 10):
 
-Both corrections were folded into this writeup before publication; neither
-changes the adjudication.
+- Azure +40% (39% cc) FY26 Q3; January deceleration scare real — **CONFIRMED**
+- AI revenue run-rate >$37B, +123% y/y — **CONFIRMED**
+- Commercial RPO $627B, +99% y/y (~30% <12mo; ex-OpenAI +26%) — **CONFIRMED**
+- Net income $31.78B, FCF $15.8B, ~$190B CY2026 capex guide — **CONFIRMED**;
+  quarterly capex figure **CORRECTED**: ~$31.9B incl. finance leases (+49% y/y),
+  not $38B/+63% ($38.4B was operating income) — correction applied above; does
+  not change the thesis.
+- Price ~$385, ~21-22x NTM, mean target ~$560 (some aggregators $589-592);
+  drawdown **corrected** to ~−31% (not −28.5%) — **CONFIRMED with corrections**
 
 ## The panel (4 independent Opus lenses, same dossier)
 
-| Agent | Lens | Top pick | Runner-up | Conviction |
-|---|---|---|---|---|
-| A | Mean-reversion / catalyst | VST | SPGI | 8 |
-| B | Growth/quality compounder | META | MSFT | 8 |
-| C | Moat & AI-irreplaceability | **CME** | CBOE | 8 |
-| D | Falling-knife / value-trap skeptic | **CME** | MSFT | 8 |
+| Lens | Top pick | Runner-up | Conviction |
+|---|---|---|---|
+| A — Mean-reversion / catalyst | **MSFT** | NFLX | 8 |
+| B — Growth/quality compounder | VEEV | MSFT | 8 |
+| C — Moat & AI-irreplaceability | **MSFT** | CME | 9 |
+| D — Falling-knife / value-trap skeptic | **MSFT** | NFLX | 8 |
 
-**Adjudication.** Weighted tally (top=2, runner-up=1): CME 4, VST 2, META 2,
-MSFT 2, SPGI 1, CBOE 1. CME won both the vote and the merits: it is the only
-name that took first place on *two* lenses — and specifically the moat lens and
-the veto lens, which is the exact signature this doctrine hunts (a dip the trap
-cannot touch). Agent A's VST has the flashiest catalysts (Meta 20-yr nuclear
-PPAs, the ~$10B Helix JV, PJM auction at ~10x prior year) but its re-rate is
-gated by PJM/FERC price-cap policy — a binary outside the company's control,
-and the exact kind of regulatory knife this doctrine avoids catching. Agent B's
-META is a magnificent business but the shallowest dip on the board (-5.2% vs
-SMA200) with a capex-depreciation debate that runs into 2027-28. CME's
-value-trap case ("volatility stays low forever") caps upside but cannot break
-the franchise — Agent D, whose whole job is finding permanent impairment,
-certified he couldn't find any here. Trap filter: pass. Screen sanity-check:
-CME passes every dip-mode gate (rank 14 of 33, composite 0.597).
+Vote tally (top=2, runner-up=1): **MSFT 7**, VEEV 2, NFLX 2, CME 1.
+Adjudication: MSFT won three of four lenses outright — including the veto lens,
+which called it "the cleanest broken-price/unbroken-business in the dossier."
+Agent B's VEEV case (19-20x vs a 72x 10-yr average, forced IQVIA-sunset
+migration) is strong and VEEV ranks #4 in the companion ranking, but its thesis
+depends on winning a contested CRM re-platforming against Salesforce, whereas
+MSFT's depends only on contracted backlog converting. The trap filter had
+nothing to veto: all four lenses rated MSFT's impairment risk lowest in the
+set. No override of the vote was needed.
 
-## Screen metrics (shortlist.json, generated 2026-07-01 23:29)
+## Screen metrics (shortlist.json, 2026-07-12)
 
-| Metric | Value |
-|---|---|
-| Price / 52w-high dist / SMA200 dist | $231.00 / -27.2% / -15.9% |
-| 12-mo return | -12.9% |
-| Market cap | $83.5B |
-| Forward P/E / trailing P/E | 17.9 / 19.7 |
-| Operating margin / ROE | 69.8% / 15.9% |
-| TTM revenue growth | +6.6% |
-| Net debt | ~$1.2B (total debt $3.7B - cash $2.5B) |
-| Free cash flow (TTM) | ~$3.0B |
-| Analyst mean target / upside | $301.13 / +30.4% (vs screen close) |
-| Recommendation | buy |
-| Composite score | 0.597 (rank 14/33) |
+rank 3 of 30 · composite 0.766 · price $385.10 · dist_sma200 −12.6% ·
+dist_52w_high −28.5% (screen; verified ~−31%) · ret_12m −22.9% · rev growth TTM
++13.0% · operating margin 46.3% · ROE 34.0% · net debt/EBITDA 0.26 · trailing
+PE 22.9 · forward PE 19.9 · analyst mean target $559.86 (+45.4%) · earnings
+quality: no flags (accrual ratio −0.07, CFO/NI 1.36).
 
 ---
 
-*Disclaimer (2026-07-02): This document is research output generated by an
-AI-assisted screening and deliberation pipeline. It is not financial advice,
-not a recommendation to buy or sell any security, and not tailored to anyone's
-financial situation. Markets can invalidate any thesis. Do your own research
-and consult a licensed professional before investing.*
+*Disclaimer (2026-07-12): This document is research output from an automated
+multi-agent screening and deliberation pipeline, produced for educational
+purposes. It is not financial advice, not a recommendation to buy or sell any
+security, and not personalized to anyone's financial situation. Scenario
+prices and probabilities are model estimates, not guarantees. Do your own
+diligence.*

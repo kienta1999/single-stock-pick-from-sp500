@@ -1,292 +1,82 @@
-# Buy-the-Dip Research Dossier — 15 names (as of 2026-07-02)
+# Dip Research Dossier — 2026-07-12
 
-Mode: **Single-pick**. Sourced from 4 parallel Opus research subagents.
-Screen metrics from `output/dip/shortlist.json` (generated 2026-07-01 23:29).
-All concrete figures carry source dates inline; unverified figures flagged
-"not found". This replaces the 2026-06-29 ranked-mode dossier (see git history).
+15 names triaged from the 30-candidate dip screen (`shortlist.json`, generated 2026-07-12 12:04). Dropped despite strong composite scores: CPRT (rev growth ~0.3% TTM + receivables flag), MA (dip only -11.5% off high — too shallow), VST (-4.8% below SMA, `ret_6m` positive — not really a dip), CBOE (-2.5% below SMA — shallow), BRO (earnings growth already -7.9%, weak analyst upside).
 
-Data-quality flags raised by researchers:
-- **ADBE fwd P/E**: screen says 7.7; street quotes ~11–14x forward. Treat 7.7 as an outlier.
-- **EQT fwd P/E 11.9** is on gas-price-inflated 2026 earnings; ~30x on normalized/trailing — the multiple is conditional on Henry Hub.
-- **SPGI** post-spin recast financials due July 6; multiples before that are noisy.
+Screen metrics recap (price / dist_sma200 / dist_52w_high / analyst_upside / fwdPE / composite):
+- NFLX $73.37 / -22.7% / -42.4% / +54.2% / 19.1x / 0.803
+- NEM $95.29 / -7.8% / -27.5% / +42.5% / 8.7x / 0.780
+- MSFT $385.10 / -12.6% / -28.5% / +45.4% / 19.9x / 0.766
+- ADBE $223.64 / -21.6% / -40.0% / +21.8% / 8.1x / 0.706
+- LVS $46.69 / -16.4% / -32.1% / +45.7% / 12.7x / 0.688
+- EQT $48.85 / -13.4% / -27.9% / +39.4% / 11.6x / 0.680
+- ISRG $406.78 / -16.6% / -31.4% / +38.1% / 34.5x / 0.672
+- VEEV $190.12 / -10.0% / -37.9% / +28.7% / 18.9x / 0.667
+- BR $147.47 / -21.5% / -43.6% / +40.0% / 14.2x / 0.638
+- IDXX $563.57 / -10.0% / -26.5% / +25.8% / 34.1x / 0.614
+- EFX $166.44 / -15.1% / -36.5% / +32.4% / 16.2x / 0.480
+- VRSK $185.39 / -8.1% / -38.8% / +18.9% / 21.4x / 0.468
+- CME $240.27 / -12.4% / -24.3% / +18.8% / 18.6x / 0.480
+- CMG $35.25 / -0.4%(sma) / -37.5%(high) / +22.0% / 26.0x / 0.473
+- ULTA $469.20 / -16.2% / -33.6% / +32.9% / 14.7x / 0.586
 
 ---
 
-## NEM — Newmont (Gold) — $93.30 | −9.3% vs 200d | −29.0% off high | fwd PE 8.3 | target $139 (+49%)
+## NFLX — Netflix
+Rebound score **7/10**. Why down: TEMPORARY — Q2'26 guide stepped down to ~13.5% growth + Reed Hastings board exit (sentiment); rising-churn watch-item, not yet in financials. Moat 8/10: scale + content flywheel + ad marketplace; genAI is a cost tailwind not a threat. Catalyst: Q2 print Jul 16 2026, ad revenue guided to ~2x to ~$3.0B (ad tier >250M MAU). Balance sheet: strong, FCF guide raised to $12.5B. Valuation: ~31x fwd P/E, not statistically cheap; mean target ~$113-115 (+~48%). Category: still #1. Value-trap risk: structural churn rise as content ages / consolidation raises content costs. Earnings-quality flag RECEIVABLES_OUTRUN ruled **benign** — cfo/ni=0.946 is healthy; receivables growth is the ad-tier B2B billing mix-shift (agencies billed net terms vs prepaid subs), corroborated by FCF +91%.
 
-**1. Why it's down — TRANSITORY (commodity/macro pullback within an uptrend).** Not an earnings problem: Q1 2026 (Apr 23) beat with EPS $2.90 vs $2.19, ~1.3M gold oz, **all-time record $3.1B quarterly FCF** on top of record **$7.3B FCF in FY2025**. The −29% off the high reflects a **gold-price pullback from peak + hawkish-Fed shift**: Goldman *cut* its end-2026 gold target to $4,900/oz on delayed rate cuts; central-bank net buying collapsed to just **16 tons in Q1 2026** (Türkiye sold 60t). Plus 2026 is a company-guided **production trough** (Q2 dip from depleted stockpiles/Cadia recovery) and oil/royalty cost headwinds.
+## NEM — Newmont
+Rebound score **7.5/10**. Why down: TEMPORARY/cyclical — 2026 is a guided trough year (output ~5.26Moz down from 5.89Moz, AISC up to ~$1,680/oz) as Nevada Gold Mines/Pueblo Viejo transition; stock is hyper-sensitive to spot gold. Moat 7/10: tier-1 orebodies, largest gold producer, capital/permitting barriers — but pure price-taker, no pricing power. Catalyst: 2027 production/cost normalization; record Q1'26 FCF $3.1B, new $6.0B buyback, ~$7B+ planned total returns. Balance sheet: fortress, net cash ~$3.2B, D/E ~0.15. Valuation: cheap, low-teens P/E, mean target ~$143 (above current). Category: #1 gold major post-Newcrest. Value-trap risk: leveraged bet on gold price — if gold falls, high 2026 AISC compresses margins hard; history of guidance misses.
 
-**2. Moat / AI-irreplaceability — 7/10.** AI cannot mine or substitute physical gold; irreplaceable Tier-1 ore bodies, enormous capital intensity. But a **price-taker with zero pricing power**.
+## MSFT — Microsoft
+Rebound score **8.5/10**. Why down: TEMPORARY — AI-capex indigestion (capex +63% y/y to ~$38B/qtr, ~$190B guided for CY2026, FCF fell to $15.8B from $20.3B) + Azure growth scare (though latest print still 40% cloud growth) + Copilot-adoption lawsuit noise. Moat 9.5/10: widest of the group — enterprise switching costs, OpenAI/Copilot distribution, hyperscale capital intensity; AI is an enabler not a threat. Catalyst: Azure reacceleration, AI revenue ~$37B run-rate (+123% y/y), $625-627B RPO backlog (>2yrs revenue) converting. Balance sheet: AAA-tier fortress. Valuation: ~21-22x NTM vs own recent 32-35x; mean target ~$560-592 (+36-43%). Category: #1/#2 cloud, dominant productivity. Value-trap risk: AI capex becomes a structurally lower-return arms race that permanently depresses FCF/ROIC.
 
-**3. Rebound catalyst.** Record FCF, **increased $6.0B buyback** (with Q1), Q3 production recovery, and guidance planned at a conservative **$4,500/oz** vs higher spot — gold strength drops straight to FCF. Mean target $139 (+49%).
+## ADBE — Adobe
+Rebound score **6.5/10**. Why down: **CONTESTED** — the one name where the bear case is a live secular-disruption thesis, not just a cycle. Market pricing genAI disintermediation of Creative Cloud (Midjourney/Runway/Sora, Figma's collaborative lead) + CEO transition; financials show no disruption yet (Q2 FY26 rev +12%, EPS +19%). Moat 6/10 (deliberately mid): PDF/Acrobat ubiquity + Firefly (commercially-indemnified genAI) vs genuine risk that "good-enough" AI tools bypass Photoshop/Illustrator entirely. Adobe **lost** the collaborative-design battle to Figma (blocked merger; Figma 690k paid users +53% y/y) — the group's one clear share-loss data point. Catalyst: AI-first ARR >$500M (3x y/y), Firefly ARR ~$300M (+~50% q/q), $25B buyback through 2030. Balance sheet: strong, ~$10.3B FCF, ~10% FCF yield. Valuation: cheapest of all 15 — ~9x forward non-GAAP P/E vs historical 30-40x; mean target ~$280-327 (+25-45%). Value-trap risk: **highest of the group** — if genAI truly commoditizes creation, 9x proves correctly cheap (melting ice cube), not a bargain.
 
-**4. Balance sheet — strongest of batch 1.** Q1 2026: **$8.8B cash, net cash +$3.2B**. No distress risk.
+## LVS — Las Vegas Sands
+Rebound score **7.5/10**. Why down: TEMPORARY (with real overhang) — Macau VIP/premium-mass margin compression from new competing capacity + China restrictions on high-roller play; stock fell on Q4'25 print *despite* record consolidated results (MBS adj. EBITDA $806M vs $605M in Q1'25). Macau industry GGR still down (-12.1% y/y June 2026). Moat 9/10: government concession scarcity (1 of 6 Macau licenses through 2032; Singapore effective duopoly) — capital intensity + regulatory lock-in AI cannot touch. Catalyst: MBS tower ramp, $740M repurchased in Q1'26 (shares -5.66% y/y), Macau margin stabilization (2-4 quarters). Balance sheet: adequate not pristine — ~$3.35B cash vs ~$15.8B debt, net debt ~$12.5B; leveraged but FCF-positive. Valuation: fwd P/E ~24x, mean target ~$68-70 (+45.7%). Category: #1 intact, dip is industry-wide not LVS-specific. Value-trap risk: Beijing tightens further, Macau GGR stays down double-digits, price wars permanently reset margins on a levered balance sheet. Earnings-quality flag RECEIVABLES_OUTRUN ruled **benign** — cfo/ni=1.75 (cash *exceeds* earnings), receivables growth is the mechanical signature of casino marker/credit play, not aggressive accrual.
 
-**5. Margin of safety.** Fwd ~8.3x on record FCF is cheap absolutely, but miners structurally trade low — partly prices a gold reversal. "Cheap for a cyclical."
+## EQT — EQT Corporation
+Rebound score **7/10**. Why down: TEMPORARY/cyclical — pure commodity + rate sentiment; 2025 net income actually *quintupled* y/y ($2,039M vs $231M) yet stock corrected on near-term gas-price weakness and PT cuts (Truist, Morgan Stanley). Moat 6/10: commodity price-taker but lowest-cost Appalachian scale + vertically integrated midstream post-Equitrans; AI can't disrupt molecules, and AI data-center demand is a genuine tailwind (24/25 analysts rate Buy on this thesis). Catalyst: FCF ~$3.5B projected 2026, >20% cash-earnings growth 2026-28, AI/LNG demand ramp. Balance sheet: strongly improved, net debt cut ~$2B to $5.7B, Fitch upgraded to BBB. Valuation: genuinely cheap — fwd P/E ~11x, EV/EBITDA ~6.4x vs ~14-16x historical; mean target ~$65-68 (+39.4%). Category: #1 US gas producer, gaining scale. Value-trap risk: Henry Hub stays low, AI-gas demand narrative slow to materialize — it's a price-taker with no control over the one variable that matters.
 
-**6. Category position.** #1 gold miner globally by production/reserves.
+## ISRG — Intuitive Surgical
+Rebound score **7.5/10**. Why down: TEMPORARY — valuation reset on a 2026 procedure-growth guide of 13.5-15.5% (deceleration from ~18% in 2025), not a business break; hospital capex caution adds to it. Moat 9/10: ~2-decade installed-base lock-in, surgeon certification switching costs, ~85% recurring instrument revenue, deep patents; AI is being embedded *into* da Vinci 5 as a moat-deepener, not a disruptor. Catalyst: guide-beating procedure growth, da Vinci 5 upgrade cycle, Ion (lung biopsy) +44% as a second S-curve. Balance sheet: fortress, ~$8.0B cash, effectively zero debt. Valuation: fwd P/E ~40.8x — still premium (docked for real, if slow, competition), mean target ~$615 (+38.1%). Category: dominant #1, but 2026 is a genuine inflection — Medtronic Hugo got FDA urology clearance (Dec 2025), J&J Ottava submitted (unlikely material impact until 2028+). Value-trap risk (mild): "great company, still-rich price" — if growth decelerates further AND Hugo/Ottava take share faster than expected, 40x compresses toward 25-30x.
 
-**7. Value-trap risk.** A leveraged bet on gold *near all-time highs*; hawkish-Fed scenario takes the stock down with gold; 2024-era cost-overrun execution overhang; oil/royalty cost inflation.
+## VEEV — Veeva Systems
+Rebound score **8/10** — highest margin-of-safety name in the full set. Why down: TEMPORARY, competition-fear-driven — down ~45% from high on Salesforce/IQVIA life-sciences-CRM threat + Vault CRM top-20 commitment count coming in below hopes; fundamentals kept compounding (FY26 rev $3.195B, Q4 +16%). Moat 8/10 (weighed carefully per brief): deep switching costs + regulatory/GxP validation lock-in on the majority (clinical/quality/regulatory) of the suite; the Salesforce threat is real but **contained to the ~1/3 CRM slice**, and IQVIA's 2029 CRM sunset actually **forces migration into Veeva's own Vault CRM** — a tailwind disguised as a threat. Catalyst: ~140 customers live on Vault CRM globally, 10 of top-20 biopharmas committed (~14 expected), FY27 revenue guided $3.59-3.60B (above estimates), $2B buyback. Balance sheet: fortress net-cash SaaS. Valuation: genuinely cheap vs own history — fwd P/E ~19-20x vs 10-yr avg ~72x, 5-yr ~63x; mean target ~$271 (+28.7%, one source cites higher). Category: still #1 in life-sciences software, contested only in CRM. Value-trap risk: Salesforce/IQVIA win the big-pharma re-platforming decisions and Vault CRM commitments stall below target.
 
-**8. Rebound score: 6.5/10.** *Fortress balance sheet and record cash flow, but a shallow pullback on a commodity moonshot — upside rides gold's next move more than any self-help rebound.*
+## BR — Broadridge Financial Solutions
+Rebound score **7.5/10**. Why down: TEMPORARY (sentiment de-rate, not a fundamental break) — Q3 FY26 print actually *raised* guidance (recurring rev growth ≥7% cc, adj. EPS growth 10-12%, pipeline >$1B +20% y/y); drop driven by broad AI-disruption sell-off in software/business-services + tokenization/DLT disintermediation fear + one soft closed-sales guide cut (longer large-deal sales cycles, a timing issue). Moat 8/10: near-monopoly in US investor communications/proxy processing (75-90% of positions), regulatory-mandated; BR is *leading* tokenization (live on-chain proxy voting, DLT repo platform settling ~$365B/day) rather than being disrupted by it. Catalyst: continued 10-12% EPS compounding, pipeline conversion, AI/tokenization monetization. Balance sheet: leveraged (net debt/equity ~113%) but high-FCF recurring-revenue model, investment-grade. Valuation: fwd P/E ~23x vs own TTM ~36x; mean target ~$246-247 — **widest upside in the group (+40-50%)**. Category: clear #1, effectively regulated near-monopoly. Value-trap risk: "someday" risk that DLT eventually disintermediates proxy plumbing — no current evidence.
 
-## ADBE — Adobe (Application Software) — ~$197 | −27.1% vs 200d | −46.2% off high | fwd PE 7.7 (street ~11–14x) | target ~+33%
+## IDXX — Idexx Laboratories
+Rebound score **8/10** — highest-quality name in the full set. Why down: TEMPORARY (cyclical volume softness) — US clinical vet visits fell ~1% in Q1'26 sparking secular-slowdown fears, but IDEXX *raised* FY26 guidance (rev $4.68-4.76B, EPS $14.45-14.90) on CAG Diagnostics recurring revenue +11% organic. Moat 8.5/10 — **highest irreplaceability score across all 15 names**: razor/razorblade installed base + recurring consumables + reference-lab network, only material competitor is Antech/Mars; physical wet-chemistry testing cannot be routed around by an LLM. Catalyst: inVue Dx cellular analyzer (5,500 placements targeted 2026), Cancer Dx panel expansion, international growth, eventual vet-visit normalization. Balance sheet: fortress — net debt/equity ~35%, EBIT covers interest ~41.8x, ROE 66%. Valuation: fwd P/E ~34x — premium but compressed from historical ~45-50x; mean target ~$700-722 (+25.8%). Category: undisputed #1, pricing power intact (11% organic growth despite falling visits proves it). Value-trap risk (low probability): if vet-visit decline is structural (post-pandemic pet-ownership normalization) rather than cyclical, the premium multiple has room to keep compressing.
 
-**1. Why it's down — MIXED, leaning transitory-with-real-secular-risk.** Adobe has **beaten earnings five straight quarters** (Q1 FY26 rev $6.4B +12%, record $2.96B op cash flow; Q2 rev $6.62B +13%) yet the average day-of reaction is **−5%**. Three overhangs: (a) **AI-disruption fear** — Figma, Canva, OpenAI (Sora/DALL·E), Midjourney, Google (Imagen/Veo) encroaching on the creative core; (b) **ARR growth decelerating to 10.9%** (Q1); (c) **CEO Shantanu Narayen announced departure Mar 12, 2026** (successor search ongoing). Fundamentals still growing double-digits; the AI threat to the moat is a genuine *potential* permanent impairment. **Verdict: valuation overshoot is temporary; the disruption risk is real and unresolved.**
+## EFX — Equifax
+Rebound score **7/10**. Why down: TEMPORARY/cyclical + regulatory overhang — Q1'26 revenue +14% (mortgage +38%) but management declined to raise full-year guidance citing macro/rate uncertainty (mortgage activity fell in the last 6 weeks from elevated Feb levels) + higher tech/data costs narrowing EPS guide to the low end + recurring credit-reporting regulatory headline risk. Moat 8/10: one of three national credit bureaus (oligopoly) + Workforce Solutions/The Work Number — a proprietary employer-sourced payroll/income database effectively impossible to replicate; AI cannot fabricate the underlying exclusive data. Catalyst: mortgage recovery on rate cuts (large operating leverage), Work Number record-base growth, new products (auto/personal-loan Record Indicator). Balance sheet: net debt/EBITDA ~2.66x, 2025 FCF $1.13B (+~40%), guiding >$1B FCF 2026 — manageable, not distress-level. Valuation: fwd P/E ~17.6-19.8x, cheap vs own historical high-20s/30x, **but the research agent's mean target read (~$205) implies only ~10% upside vs the screen's analyst_upside of +32.4% — this gap needs Phase 3.5 verification** before weighting EFX's margin of safety. Category: co-leader in 3-firm oligopoly, Workforce Solutions differentiated #1 asset. Value-trap risk: rates stay high-for-longer, mortgage stays depressed, regulatory hit to credit-lock economics.
 
-**2. Moat / AI-irreplaceability — 5/10 (most AI-exposed of the 15).** Deep moat: workflow switching costs, PDF/Acrobat standard, enterprise integration, 850M MAUs, own AI traction (Firefly $250M ARR, AI ARR tripling, ~75% QoQ). But generative AI **directly commoditizes the create-an-image/asset function**.
+## VRSK — Verisk Analytics
+Rebound score **7/10**. Why down: mostly TEMPORARY (technical + fear) with a genuinely open structural question — removed from Nasdaq-100 and Russell 1000 Growth in June 2026 rebalance (forced passive outflows) + AI-disruption fear (LLMs commoditizing proprietary data) + Q1'26 growth slowed to 3.9% (management called it a "trough") + >$10B Venezuela-earthquake economic-loss estimate + insider selling. Moat 8/10: proprietary insurance-data consortium (ISO heritage) embedded in underwriting/claims/cat-modeling workflows, network effect (insurers contribute data to gain access); playing AI offense (GenAI Commercial Underwriting Assistant, XactAI claims automation, Claude/MCP integration). Catalyst: "trough" Q1 growth implies reacceleration, index-deletion selling exhaustion, sustained ~56% EBITDA margins. Balance sheet: net debt/EBITDA ~2.4-2.7x, comfortable, FCF ~$1.19B. Valuation: fwd P/E ~24.5x down from 30x+; mean target ~$222 (+18.9%). Category: dominant #1, but growth decelerated to low-single-digits — cyclical-vs-structural debate is live. Value-trap risk: **highest genuine-impairment tail risk of the batch** — if AI genuinely commoditizes proprietary risk data over time, the moat erodes structurally, not cyclically.
 
-**3. Rebound catalyst.** **$25B buyback (announced ~Apr 21, through April 2030)** — ~30% of market cap — plus a **new-CEO reset**, freemium/AI monetization shift, Firefly ARR velocity (re-rate hinges on Firefly sustaining ~75% QoQ into H2 FY26).
+## CME — CME Group
+Rebound score **8/10** (per research agent; moat 9/10 — highest in the exchange/consumer batch). Why down: TEMPORARY — fell ~33% from March 2026 high on (a) CEO Terry Duffy's announced March 2027 succession, (b) crypto-competition fear (CFTC approved Kalshi regulated Bitcoin perpetual futures; a broader CFTC-deregulation narrative), (c) a new equity-index-futures competitor — while Q1'26 was a **record** quarter (revenue $1.9B, adj. EPS $3.36, both up strongly y/y) and the stock still fell ~3% on the print. Moat 9/10: liquidity network effect (deepest order book = tightest spreads = more flow), CCP clearing/netting worth billions in collateral savings, regulatory/certification barriers — AI cannot manufacture liquidity or trust; docked one point because crypto/perpetuals is a real (if marginal) threat. Catalyst: continued record volumes, ~4%+ dividend yield + variable specials, $536M buyback in Q1 alone. Balance sheet: very strong, ~$2.6B cash vs $3.4B debt, D/E 0.13, interest coverage ~29x. Valuation: fwd P/E ~19-22x vs ~16.5x industry median (still premium); mean target ~$290-314 (median ~$300) — **+35%+ upside from ~$221**. Category: undisputed #1 in US rate/energy/ag futures; dip is fear of *future* share loss, not evidence of current loss. Value-trap risk: if CFTC deregulation genuinely opens the moat (perpetuals, 24/7 crypto-native venues, prediction markets) and post-Duffy leadership fumbles the defense, open interest could migrate. **Note: this exact ticker/thesis was the single-pick winner of this skill's prior dip run on 2026-07-02** — this is an independent re-run against the fresh 2026-07-12 screen.
 
-**4. Balance sheet — strong.** Record ~$2.96B quarterly op cash flow, minimal net debt; buyback easily funded.
+## CMG — Chipotle Mexican Grill
+Rebound score **6/10** — thinnest margin of safety of the batch. Why down: MOSTLY TEMPORARY/cyclical with an early inflection — down ~54% from June 2024 ATH on 5 consecutive quarters of falling transactions, FY25 comps -1.7% (first full-year decline since 2016), guided to no 2026 sales growth (Feb 2026) triggering a fresh leg down. Root cause is cyclical/self-inflicted (K-shaped consumer pressure, marketing/value stumble), not disruption. Crucially, **Q1'26 broke the streak**: comps +0.5% (vs -0.7% expected), transactions +0.6% — first positive traffic in six quarters. Moat 8/10: brand + scale + hard-to-copy fresh-prep operating model; food service is physical/local, AI cannot deliver a burrito. Catalyst: "Recipe for Growth" (high-protein menu, efficiency equipment, digital, unit growth ~8-10%/yr); Q2'26 print is the next proof point. Balance sheet: fortress — zero long-term debt, ~$350M cash, ~$1.4B FCF. Valuation: **weakest of the batch** — ~28.8x P/E, below peer avg (~37.8x) but above SWS fair-value estimate (~27.3x); mean target ~$43.03 implies only roughly flat-to-modest upside; EPS actually *fell* in Q1'26 on beef/wage inflation. Category: still #1 fast-casual/Mexican leader with pricing power. Value-trap risk: multiple stays rich even as growth structurally slows to mid-single-digits — "great company, mediocre stock," margin compression a live risk.
 
-**5. Margin of safety.** Street fwd ~11–14x vs 10-yr median ~48x — one of the cheapest large-cap software names. Targets from +33% (~$262) up to $314. Genuinely cheap **if** growth holds.
-
-**6. Category position.** Still #1 in creative/document software, but losing share at the edges — Figma in UI/UX, Canva in prosumer.
-
-**7. Value-trap risk.** The classic melting-ice-cube: "good-enough" free AI content, ARR growth slips below 10%, moat erodes, buyback catches a falling knife. **The most legitimate value trap of the 15.**
-
-**8. Rebound score: 6.5/10.** *Cheapest name with a huge buyback and still-growing cash machine, but you're underwriting whether generative AI commoditizes its core — the debate is unresolved.*
-
-## LVS — Las Vegas Sands (Casinos & Gaming) — −17.4% vs 200d | −32.7% off high | fwd PE 12.6 | upside +49%
-
-**1. Why it's down — TRANSITORY (margin-mix worry, not demand loss).** Operations inflecting *up*: Q1 2026 (Apr 22) rev **+25.3% to $3.585B**, net income **+57% to $641M**. Stock fell **8.6% next day** because Macau adjusted EBITDA margin compressed ~200bps to 29.6% on **intense competition and promotional spend**, with fear it persists into higher-capacity **H2 2026**.
-
-**2. Moat / AI-irreplaceability — 8/10.** Physical integrated resorts are AI-proof. **Scarce Macau concession (one of only 6)**, extreme capital intensity, **Marina Bay Sands Singapore duopoly**.
-
-**3. Rebound catalyst.** **$8B Marina Bay Sands expansion** (~2027+), Macau premium-mass recovery (sector GGR **+10.9% YTD through May, +6.7% June**), ramped buybacks + reinstated dividend. Next print 07/22/2026.
-
-**4. Balance sheet — most leveraged of the 15, but manageable.** Q1: **$13.9B debt vs $3.3B cash (~$11.9B net debt)**, 4.6% weighted cost, self-funding the expansion.
-
-**5. Margin of safety.** Fwd 12.6x with +49% analyst upside — cheap given the earnings inflection, though hostage to Macau margins.
-
-**6. Category position.** #1 in Macau mass + Singapore, **but Galaxy and Wynn are winning premium-mass share** (CLSA prefers Galaxy).
-
-**7. Value-trap risk.** Macau margin compression persists as **sector capex jumps to ~$3.79B in 2026** (from $2.06B); China-consumer softness; concession/regulatory risk; leverage during the capex cycle.
-
-**8. Rebound score: 7/10.** *Strong, AI-proof earnings inflection with scarce licenses and buybacks — the honest risk is Macau margins and leverage into a heavy capex year.*
-
-## MSFT — Microsoft (Systems Software) — ~$384 | −13.5% vs 200d | −28.7% off high | fwd PE 19.8 | upside +46%
-
-**1. Why it's down — TRANSITORY (de-rating on capex/returns timing, not demand).** Its **worst quarter since 2008** driven by the AI-spending debate: FY26 **capex guided ~$190B (+61% YoY)**, quarterly **FCF −22% to $15.8B**, gross margin **67.6% (lowest since 2022)**. Added overhang: **OpenAI partnership restructured to non-exclusive** (revenue-share capped ~$38B through 2030; OpenAI signed **$50B with Amazon**, uses Oracle). But the engine is fine — **Azure +40%, AI ARR $37B (+123%)**.
-
-**2. Moat / AI-irreplaceability — 9/10.** Enterprise switching costs across Windows/Office/Azure, identity/security lock-in. **Arming the AI wave, not disrupted by it** — owns 27% of OpenAI + royalty-free IP through 2032. Erosion vector: OpenAI diversifying clouds.
-
-**3. Rebound catalyst.** Capex growth moderating into an **FCF inflection**, Copilot monetization, Azure re-acceleration, OpenAI-deal clarity. Mean target **~$589–592 (~+50%)**; bulls $625–655.
-
-**4. Balance sheet — fortress.** Modest net debt, enormous cash generation even after record capex.
-
-**5. Margin of safety.** Fwd ~19.8x (street ~21–25x NTM), **below its 5-yr average ~28–33x**.
-
-**6. Category position.** #1 enterprise software, #2 cloud; pricing power intact; no share-loss signal.
-
-**7. Value-trap risk.** AI capex never earns its cost of capital — depreciation from $190B/yr builds a multi-year EPS drag; OpenAI walks or commoditizes; AI-bubble de-rating deepens. About *returns on spend*, not franchise loss.
-
-**8. Rebound score: 7.5/10.** *Highest-quality, most AI-proof, fortress balance sheet, below its own historical multiple — a genuine capex-driven de-rating, not a broken business.*
-
-## ISRG — Intuitive Surgical — ~$399 | −17.6% vs 200d | −32.1% off high | fwd PE 34.1 | upside +40%
-
-**1. Why it's down.** Down ~27–28% YTD 2026 despite a *beat-and-raise* Q1 (~Apr 2026): adj EPS $2.50 vs $2.08 est, rev $2.77B beat, FY26 procedure-growth guide *raised* to 13.5–15.5%. Two overhangs: (a) **FDA Class I recall** (June 2026) of 8mm SureForm 30 Gray stapler reloads — linked to 4 major injuries and 1 death; (b) **China collapse** — Q1 China placements fell to 4 systems on domestic competition and volume-based procurement; plus a GLP-1-shrinks-bariatric bear thesis. Deutsche Bank Sell ($440) treats China + GLP-1 as structural. **Verdict: mostly TRANSITORY, with a real but bounded permanent sliver in China.**
-
-**2. Moat / AI-irreplaceability — 8.5/10.** 58% US installed-base share, **86% accessories share, ~85% recurring revenue**, ~12,000 systems. Razor/razorblade + surgeon training/certification + regulatory moat. Medtronic Hugo (US urology, Dec 2025), J&J Ottava circling — real but not displacing. AI *augments* da Vinci 5.
-
-**3. Rebound catalyst.** da Vinci 5 ramp, 13.5–15.5% procedure compounding, recall resolution, sentiment reset off a fresh 52-wk low. Mean target **~$581 (+37–40%)**; bulls $610–850. Timing: 2–4 quarters.
-
-**4. Balance sheet.** Fortress: **no long-term debt, net cash**, strong FCF.
-
-**5. Margin of safety.** Fwd ~34–37x vs own multi-year 45–60x — cheap *relative to itself*, still premium absolutely.
-
-**6. Category position.** Clear #1 with pricing power.
-
-**7. Value-trap risk.** China secular loss; GLP-1 dents bariatric TAM; recall reputational risk; 35x compresses hard if procedure growth slips below ~12%.
-
-**8. Rebound score: 7.5/10.** *A dominant compounder knocked down by a fixable recall and a bounded China problem — the core annuity is intact.*
-
-## VEEV — Veeva Systems — ~$183 | −13.8% vs 200d | −39.8% off high | fwd PE 18.4 | upside +33%
-
-**1. Why it's down.** ~29% YTD decline despite solid results (Q3 FY26 rev +16% YoY beat, EPS +17%, guide nudged up). A **competition-fear de-rating**: KeyBanc downgrade citing Salesforce success; **AstraZeneca chose Salesforce Agentforce Life Sciences (Dec 2025)**, Novartis too. The Veeva↔Salesforce platform split forces every drugmaker to choose by **Sept 2030**. **Verdict: MOSTLY TRANSITORY (sentiment), with a legitimate competitive-share question.**
-
-**2. Moat / AI-irreplaceability — 7/10.** ~**80% life-sciences CRM share**; Vault spans clinical→regulatory→commercial. 9 of top-20 biopharma committed to Vault CRM. But **Salesforce Agentforce is AI-native** — the one name where a substitute could route around part of the product.
-
-**3. Rebound catalyst.** Vault CRM migration scoreboard, FY27 guide ~$3.585–3.60B at ~44% margin, **$2B buyback**, AI products. Mean target ~+33%. Timing: 12–24 months.
-
-**4. Balance sheet.** **$5B+ cash, no material debt**, ~44% op margin.
-
-**5. Margin of safety.** Fwd ~18x vs historic 30–50x — cheapest ever as a public company; multiple already prices meaningful share loss.
-
-**6. Category position.** Still #1 (~80%), but the dip *is partly* a share-loss signal (AZ, Novartis). Scoreboard ~9 Veeva vs ~3 Salesforce.
-
-**7. Value-trap risk.** Salesforce+IQVIA keep winning marquee logos into 2030 → share erodes, growth decelerates, 18x re-rates lower — a melting-share value trap.
-
-**8. Rebound score: 7/10.** *A fortress-balance-sheet monopoly at a trough multiple; the sole real risk is Salesforce chipping at share.*
-
-## IDXX — IDEXX Laboratories — ~$562 | −14.5% vs 200d | −29.9% off high | fwd PE 32.5 | upside +32%
-
-**1. Why it's down — TRANSITORY.** ~14–16% YTD decline on a **vet-visit-volume fear**: US same-store clinical visits fell ~1% (Q1 2026). But Q1 was strong — rev $1,141M **+14% rep/+11% organic**, FY26 guide *raised* to $4,675–4,760M, EPS $14.45–14.90. The ~1,100bps gap between falling visits and rising diagnostics recurring revenue shows **decoupling** from visit volumes.
-
-**2. Moat / AI-irreplaceability — 8/10.** Installed-base razor/razorblade ($3,500–5,500 revenue/instrument), reference-lab network, new **inVue Dx** platform. AI can't route around physical in-clinic diagnostics and reagents.
-
-**3. Rebound catalyst.** inVue Dx placements (5,500-unit 2026 target), recurring revenue compounding independent of visits, vet-visit stabilization, 2026 Investor Day. Mean target ~$709–747 (+32%). Timing: 2–4 quarters.
-
-**4. Balance sheet.** Highly cash-generative; some debt, comfortably serviced. No distress risk.
-
-**5. Margin of safety.** Fwd ~32–37x — below its own ~40–50x band but still expensive absolutely; a "quality reset," not a bargain.
-
-**6. Category position.** Clear #1 in companion-animal diagnostics; demand-volume concern, not share loss.
-
-**7. Value-trap risk.** Structural pet-economy softness → decoupling caps out → ~35x compresses hard. Slowest top-line grower of its batch.
-
-**8. Rebound score: 6.5/10.** *Best-in-class compounder whose recurring engine quietly beats the scary headline — solid rebound, but the highest absolute multiple caps upside.*
-
-## META — Meta Platforms — ~$612 | −5.2% vs 200d | −22.2% off high | fwd PE 16.9 | upside +35%
-
-**1. Why it's down — TRANSITORY.** Fell ~8–10% on the Q1 2026 print (Apr 29) — a **capex/ROI de-rating**, not demand. Q1 was a blowout: **ad revenue +33% to $55.0B (fastest since 2021)**, adj EPS $7.31 vs $6.79. But 2026 capex raised to **$125–145B**, no "very precise plan" for AI product scaling (Zuckerberg). Street fear: **~$19B depreciation drag on 2027 op income**, Reality Labs cumulative losses **>$83B**, 8,000-person layoff (Apr 2026) offsets ~12% of incremental depreciation.
-
-**2. Moat / AI-irreplaceability — 8/10.** 3.5B+ users, network effects, unmatched ad-targeting data. AI is a **tailwind** (2026 ad growth ~24%, ~2x Google's ~12%). Long-tail threat: attention shifts to AI assistants/TikTok.
-
-**3. Rebound catalyst.** ~20%+ ad compounding, AI ad-efficiency monetizing the capex, capex normalization, buybacks. Mean target **~$825 (+35%)** (66 analysts, range $664–1,015). Swing factor: 2027 depreciation.
-
-**4. Balance sheet.** **$81.2B cash (Mar 31 2026)**, TTM FCF ~$48B. Funds $145B capex from cash flow.
-
-**5. Margin of safety.** Fwd ~16.7–17x — cheapest of its batch, well below own history, on 30%+ revenue growth. The most clearly *cheap-because-of-the-dip* name.
-
-**6. Category position.** Co-#1 in digital advertising, gaining share.
-
-**7. Value-trap risk.** Capex black hole; 2027–28 depreciation crushes EPS before AI monetizes; Reality Labs bleeds; AI assistants erode engagement; regulatory tail.
-
-**8. Rebound score: 8/10.** *Cheapest, cash-richest, sold off purely on AI-capex fear while the ad engine accelerates — highest-conviction transitory dip of its batch.*
-
-## VST — Vistra Corp — ~$152 | −9.1% vs 200d | −29.4% off high | fwd PE 14.2 | upside +46%
-
-**1. Why it's down — TRANSITORY.** Off ~29% from the high despite *record* fundamentals: Q1 2026 rev $5.6B (+43% YoY), record adj EBITDA ~$1.5B (+20%) — yet fell ~8% on the print. De-rating of the AI-power trade (Jan DeepSeek scare) + a specific regulatory overhang: PJM governors pushing to extend **capacity price collars/caps** for 2028/29–2029/30 auctions; a White House PJM price-cap idea spooked merchant power.
-
-**2. Moat / AI-irreplaceability — 8/10.** Capital intensity + siting/permitting + nuclear-and-gas fleet inside the two tightest US power markets (PJM, ERCOT), locked into 20-yr PPAs. AI *is the demand driver*.
-
-**3. Rebound catalyst.** (a) **Meta 20-yr nuclear PPAs — >2,600 MW + 433 MW uprates** (Jan 9, 2026); (b) **Helix Digital Infrastructure ~$10B JV with KKR, Nvidia, KIA**, Vistra preferred power provider; (c) PJM auction cleared **$269.92/MW-day (~10x prior year)**; (d) 2026 guide adj EBITDA ~$7.2B. Key unlock: PJM price-cap resolution.
-
-**4. Balance sheet.** ~3x EBITDA, recent **IG upgrades**, strong FCF; nuclear PTC floor protects base case through 2027.
-
-**5. Margin of safety.** Fwd ~14–17x (5-yr avg ~15.1 — in line); EV/EBITDA compressed 12.8x→9.3x. Mean target ~$225 (+40%), Strong Buy.
-
-**6. Category position.** #1-tier US independent power producer; pricing power *rising*.
-
-**7. Value-trap risk.** PJM/FERC **price caps** directly clip the capacity-revenue upside; merchant power cyclical; hyperscaler spending pause deflates the AI tailwind.
-
-**8. Rebound score: 8/10.** *Record earnings into a policy-driven selloff, contracted AI demand, IG balance sheet — cleanest temporary dip of its batch, gated by PJM headlines.*
-
-## CBOE — Cboe Global Markets — ~$246 | −9.6% vs 200d | −32.3% off high | fwd PE 16.8 | upside +29%
-
-**1. Why it's down — MOSTLY TRANSITORY (one structural watch-item).** (a) CFTC's May 29, 2026 approval of **Kalshi Bitcoin perpetual futures** hammered exchange stocks; (b) **falling volatility** threatens retail options volume; (c) multi-listed options share slipped to **29.1% from 31.1% YoY** amid rebate competition — a slow structural drag, but not the crown jewels.
-
-**2. Moat / AI-irreplaceability — 8/10.** **Exclusive SPX and VIX** franchises (proprietary S&P license — legally can't be cloned), liquidity network effects, Data Vantage. Adj op margin ~67%.
-
-**3. Rebound catalyst.** Data Vantage inflecting: Q1 2026 rev **$181.3M vs $152.5M (+19%)**, 2026 organic growth guide *raised* to low-double-digit. Proprietary index-options ADV +35% (Q4'25). Any vol spike is an immediate catalyst. Mean target ~$271.
-
-**4. Balance sheet.** Asset-light, light debt, high-margin recurring cash flow (exact net debt not found).
-
-**5. Margin of safety.** Fwd ~16.8–19x vs 5-yr avg ~32.7 and 3-yr ~37.5 — **roughly half its historical multiple**.
-
-**6. Category position.** #1 and exclusive in index options; share loss confined to the commoditized multi-listed tier.
-
-**7. Value-trap risk.** A *durable* low-vol regime shrinks options demand; prediction markets/crypto perps siphon speculative flow; rebate war grinds.
-
-**8. Rebound score: 7/10.** *A monopoly index-options franchise at half its historical multiple, Data Vantage accelerating — the main risk is a persistently calm market, not a broken moat.*
-
-## CME — CME Group — ~$232 | −15.9% vs 200d | −27.2% off high | fwd PE 17.9 | upside +30%
-
-**1. Why it's down — TRANSITORY (fear-driven, contradicted by results).** Fell ~9% since the CFTC's May 29 Kalshi ruling. Two scares: (a) **Kalshi Bitcoin perpetuals** — CME **sued the CFTC June 18, 2026** arguing perpetuals are swaps under Dodd-Frank; Kalshi self-certified a dozen crypto perps, >$3B notional. (b) **FMX Futures Exchange** (Lutnick/BGC) Treasury-futures competition — but **FMX volumes slumped and traders reverted to CME**. Meanwhile Q1 2026 was a *record*: ADV **36.2M contracts (+22%)**, rev $1.9B (+14%), adj op margin **72.8% (all-time high)**, records in all six asset classes.
-
-**2. Moat / AI-irreplaceability — 9/10.** ~**98–99% of on-exchange US interest-rate futures**, open-interest/liquidity network effect, **margin-netting/cross-margining** advantage (FICC cross-margin saving ~$85B/day) = hard capital-efficiency switching costs. FMX's stumble proves it. AI can't substitute a clearinghouse's netting pool.
-
-**3. Rebound catalyst.** Volume/OI records + rate volatility; favorable court/CFTC outcome on Kalshi removes the overhang; expanding cross-margin agreements. Mean target ~+30%.
-
-**4. Balance sheet.** Fortress, asset-light, minimal debt; returned **$3.2B** in Q1 (dividends + $536M buybacks).
-
-**5. Margin of safety.** Fwd **17.9x** vs its historical mid-to-high-20s norm (precise average not found) — a clear de-rating on record earnings.
-
-**6. Category position.** Uncontested #1 in rate futures; the dip is fear of *future* share loss, not actual loss.
-
-**7. Value-trap risk.** CFTC-blessed perps *and* a re-energized FMX both gain durable traction; sustained low rate-vol cuts volumes; political/regulatory risk both ways (Lutnick is Commerce Secretary).
-
-**8. Rebound score: 8/10.** *Widest moat on the list, record volumes and margins, de-rated on a competitive scare its own results and FMX's stumble already contradict.*
-
-## EQT — EQT Corporation — −6.9% vs 200d | −22.5% off high | fwd PE 11.9 (conditional) | upside +32%
-
-**1. Why it's down — TRANSITORY, but commodity-dependent.** Off ~22% on natural-gas **price/sentiment volatility** — a death-cross/oversold technical setup with no fresh negative catalyst — despite a **record Q1 2026: FCF $1.8B** (winter gas prices, peak production, Equitrans integration, entering winter **largely unhedged**).
-
-**2. Moat / AI-irreplaceability — 5/10.** **Lowest-cost Appalachian scale producer** (largest US gas producer), vertical integration via Equitrans, ~**53% of Mountain Valley Pipeline**. A cost-curve moat, not pricing power — a **price-taker**.
-
-**3. Rebound catalyst.** LNG export ramp + **data-center gas demand (+~10 Bcf/d by 2030)**; MVP expansion; US gas consumption to ~107.6 Bcf/d in 2026. FCF guided ~$3.5B for 2026 (~$6B at full LNG portfolio). Mean target ~$69 (+31%).
-
-**4. Balance sheet.** Net debt ~$5.7B → $5B year-end target, leverage **<1x EBITDA**, retired ~$1.7B notes in Q1, **Fitch upgrade to BBB**.
-
-**5. Margin of safety.** Fwd 11.9x on gas-price-*inflated* earnings; ~30x normalized/trailing — the multiple is entirely a function of the gas-price assumption.
-
-**6. Category position.** #1 US gas producer by volume; share not being lost; the stock tracks the commodity.
-
-**7. Value-trap risk.** **The clearest falling-knife case of the 15**: warm winter/oversupply collapses gas prices, record FCF evaporates, unhedged magnifies downside.
-
-**8. Rebound score: 6.5/10.** *A deleveraged, lowest-cost #1 gas producer levered to a real demand wave — highest reward but hostage to a commodity it can't set.*
-
-## EFX — Equifax — −18.4% vs 200d | −38.3% off high | fwd PE ~15.8 | upside +36%
-
-**1. Why it's down — TEMPORARY (cyclical), with real timing risk.** ~−30% YTD despite a strong Q1 2026 (EWS mortgage rev +14%, USIS mortgage +60%, record 17% Vitality Index). Fell because management **held rather than raised** FY26 guidance after the beat, assuming **US mortgage market down low-single-digits in 2026**. Fed held in early 2026, 30-yr mortgage ~6.4–6.5%, refi wave **has not materialized**, cuts slipped to 2027+. Minor flag: insiders sold ~$7.6M over three months.
-
-**2. Moat / AI-irreplaceability — 8.5/10.** ~90% of revenue from **proprietary non-public data**. Crown jewel: The Work Number / EWS payroll database (**211M active records, 105M unique SSNs**) — network effects + certification lock-in AI cannot recreate. AI is a tailwind (EWS EBITDA margin 52.3%, +200bps on AI productivity).
-
-**3. Rebound catalyst.** A **mortgage/rate cycle turn** (outsized operating leverage); meanwhile record Vitality Index, TWN record growth + pricing. Timing risk: the market catalyst is pushed toward 2027.
-
-**4. Balance sheet.** ~$181M cash, ~$5.24B debt (net ~$5.06B), FCF ~$1.13B TTM, guiding >$1B FCF 2026. Solid; endures a prolonged trough.
-
-**5. Margin of safety.** Fwd ~15.8–19.8x vs historical 30–35x — a major de-rating; mean target ~$236–253 (+25–36%). Discount partly reflects a genuinely weaker mortgage backdrop.
-
-**6. Category position.** #1/co-leader credit bureau; **gaining share** in mortgage via free TWN Indicator.
-
-**7. Value-trap risk.** Higher-for-longer into 2027–28 → earnings stagnate, cheap multiple grinds sideways. Insider selling.
-
-**8. Rebound score: 7.0/10.** *Highest-quality moat of its batch and cheapest on forward P/E, but the rebound is hostage to a rate cut that keeps slipping.*
-
-## VRSK — Verisk Analytics — −9.7% vs 200d | −40.8% off high | fwd PE 21.2 | upside +20%
-
-**1. Why it's down — MOSTLY TEMPORARY (cyclical) + a genuine unproven secular question.** ~−41% over 12 months. Trigger: **Mar 26, 2026** (−5.2%, sharpest drop in 2+ yrs) when prelim Q1 P&C data showed the insurance market **normalizing faster than expected**: premium growth ~6.5%→~3.8% annualized, combined ratio ~99.4%. Verisk's growth decelerated 7.5% (2024) → 6.6% (2025) → **3.9% Q1 2026** — management called it a **"trough."** Plus **removal from Nasdaq-100 June 22, 2026** (forced selling) and AI-commoditization fear.
-
-**2. Moat / AI-irreplaceability — 7.5/10.** ~81% recurring insurance revenue, **regulatory embedment via ISO** (forms/rates baked into insurer filings), switching costs, network effects. Caveat: ~20–25% of revenue tied to premium growth (cyclical); the insurers-build-in-house-AI bear case is more credible here than at EFX/SPGI.
-
-**3. Rebound catalyst.** Pricing-cycle turn off the "trough"; **$1.5B accelerated share repurchase** (Mar 2026, funded by $1B notes + $500M term loan); sentiment reset if normalization proves a plateau.
-
-**4. Balance sheet.** 2.4x debt/EBITDA (within 2–3x target), FCF ~$1.2B at ~39% margin, >50% adj EBITDA margin. Levering deliberately for buybacks; survivable but least cushion of its batch.
-
-**5. Margin of safety.** Fwd ~21.2x — cheaper than its historical premium but richest of its batch. Target spread wide: BMO $275, Barclays $233, **BofA cut to $190**.
-
-**6. Category position.** Dominant #1 in P&C data/analytics; ISO lock-in intact; customers' demand slowed, not Verisk's share.
-
-**7. Value-trap risk.** Pricing "golden era" structurally over **and** AI lets carriers internalize analytics → margins and multiple both compress — a slow de-rating rather than a snap-back.
-
-**8. Rebound score: 6.0/10.** *Franchise quality can't fully offset the twin overhang of a pricing-cycle trough and the most credible AI-commoditization question of the group.*
-
-## SPGI — S&P Global — ~$394–397 | −5.0% vs 200d | −21.6% off high | fwd PE ~18.8 | upside +28%
-
-**1. Why it's down — TEMPORARY (already reversing).** Drawdown dates to **Feb 2026**: FY26 adj EPS guide **$19.40–19.65 vs ~$19.96 consensus**, ratings/issuance growth cooling. A priced-for-perfection multiple corrected on a normal cyclical guide-down. Crucially **already turning**: on **July 1, 2026 SPGI closed +7.99%** on completion of the Mobility spin (ticker **MBGL**, 1:1) plus an analyst upgrade; Ratings re-accelerating on heavy IG issuance including **tech firms issuing bonds to fund AI capex**.
-
-**2. Moat / AI-irreplaceability — 9/10.** Ratings is a **regulatory-entrenched duopoly** (with Moody's); S&P indices a licensing near-monopoly; Market Intelligence compounds it. AI *increases* bond issuance (more to rate). Essentially un-disruptable near term.
-
-**3. Rebound catalyst — ALREADY FIRING.** Mobility spin **completed July 1, 2026**; **$2B debt offering at MBGL funds incremental SPGI buybacks + debt reduction**; recast FY25/Q1-26 financials due **July 6, 2026**; AI-capex IG issuance tailwind. The one name where the catalyst is confirmed, not awaited.
-
-**4. Balance sheet.** Investment-grade, huge recurring FCF; post-spin *reducing* debt and buying back stock.
-
-**5. Margin of safety.** Fwd ~18.8x (recast due July 6 is authoritative). Mean target ~$556–563, Strong Buy, +28–32% from ~$394–397. Shallowest dip of its batch.
-
-**6. Category position.** Unquestioned #1/co-leader across ratings and indices; growth-*rate* reset, not share loss.
-
-**7. Value-trap risk.** Lowest of its batch: prolonged issuance downturn; messy spin/recast optics; **the easy +8% snap has already happened**, compressing remaining upside.
-
-**8. Rebound score: 8.0/10.** *Best moat, cleanest catalyst (spin done, stock already +8%), lowest value-trap risk — highest conviction, if the shallowest starting discount.*
+## ULTA — Ulta Beauty
+Rebound score **7/10**. Why down: TEMPORARY — competitive-encroachment *fear* (Sephora-at-Kohl's, Amazon now largest US beauty retailer ~23% share, TikTok Shop beauty +107.7% y/y, Target shop-in-shop non-renewal ending Aug 2026), not deteriorating results: FY25 comps +5.4%, Q1 FY26 (Jun 2 2026) net sales +11.1%, comps +5.3%, EPS +15.5% to $7.74. Moat 6/10 (most contestable of the 15) — category scale + ~44M-member loyalty + mass+prestige assortment + in-store services Amazon can't replicate, but Sephora/Kohl's directly targets the same suburban shopper and AI/e-commerce genuinely can route around the transactional (replenishment) half of the business even if not the experiential half. Catalyst: already firing — Q1 beat, guidance *raised* (op profit growth to 6.5-9%, EPS to $28.36-28.80), buyback target raised $1B→$1.5B FY26. Balance sheet: fortress, zero long-term debt, ~$454.6M cash. Valuation: fwd P/E ~16.1x vs industry ~15.6x, well below Ulta's own historical low-20s-30x; mean target ~$681.5 (+~32.9% per screen). Category: still #1 US specialty-beauty retailer, comps accelerating not eroding — share-loss thesis is prospective, not evidenced yet. Value-trap risk: structural, slow-bleed share erosion (Amazon/TikTok take convenience/replenishment, Sephora/Kohl's takes prestige foot traffic, losing Target removes a customer-acquisition funnel) — if comps roll over in FY27 as these compound, the "cheap" 16x re-rates lower on falling estimates.
 
 ---
 
-## Researcher batch rankings (for reference)
+## Earnings-quality flags — summary of verdicts
+- **NFLX** (RECEIVABLES_OUTRUN): benign — ad-tier B2B billing mix-shift, cfo/ni=0.946 healthy, FCF +91%.
+- **LVS** (RECEIVABLES_OUTRUN): benign — casino marker/credit-play timing, cfo/ni=1.75 (cash exceeds earnings).
+- No other triaged names carry earnings-quality flags.
 
-- Batch 1: MSFT 7.5 > LVS 7.0 > NEM 6.5 = ADBE 6.5
-- Batch 2: META 8.0 > ISRG 7.5 > VEEV 7.0 > IDXX 6.5
-- Batch 3: VST 8.0 ≈ CME 8.0 > CBOE 7.0 > EQT 6.5
-- Batch 4: SPGI 8.0 > EFX 7.0 > VRSK 6.0
+## Cross-batch rebound-score ranking
+1. MSFT 8.5
+2. IDXX 8.0 / VEEV 8.0 / CME 8.0
+4. NEM 7.5 / LVS 7.5 / ISRG 7.5 / BR 7.5
+8. NFLX 7.0 / EQT 7.0 / EFX 7.0 / VRSK 7.0 / ULTA 7.0
+13. ADBE 6.5
+14. CMG 6.0
