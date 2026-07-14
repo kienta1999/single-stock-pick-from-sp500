@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""Local web dashboard for the S&P 500 stock-pick funnel.
+"""Local read-only web dashboard for the S&P 500 stock-pick funnel.
 
-Serves a single-page UI on http://127.0.0.1:8765 with:
-  - run buttons (fetch prices, momentum/dip screen) with a live log,
-  - the latest shortlist ("top 50") table per mode,
-  - funnel-stage attrition bars,
-  - the picks ledger and the latest AI panel pick/ranking (rendered markdown).
+Serves a single-page UI on http://127.0.0.1:8765 that displays what is already
+on disk — it never runs anything and never writes:
+  - the latest shortlist ("top 50") table per mode  (output/<mode>/shortlist.csv),
+  - funnel-stage attrition bars                     (output/<mode>/funnel.json),
+  - the latest AI panel pick and top-10 ranking     (output/<mode>/final_*.md),
+  - the picks ledger                                (picks/ledger.csv).
 
-The deterministic funnel (fetch.py / screen.py) runs from the buttons. The AI
-pick itself (web research + Opus panel) runs inside Claude Code as a skill and
-cannot be launched from a browser — the UI shows the slash command to paste.
+To refresh the data, run the skills in Claude Code: /stock-pick-momentum or
+/stock-pick-dip (the UI shows copyable commands).
 
 Stdlib only. Run:  python UI/dashboard.py  [--port 8765]
 """
@@ -17,10 +17,6 @@ Stdlib only. Run:  python UI/dashboard.py  [--port 8765]
 import argparse
 import csv
 import json
-import subprocess
-import sys
-import threading
-import time
 from datetime import datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -28,99 +24,6 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "output"
 LEDGER = ROOT / "picks" / "ledger.csv"
-
-_venv_py = ROOT / ".venv" / "bin" / "python"
-PY = str(_venv_py) if _venv_py.exists() else sys.executable
-
-# job name -> ordered list of (label, argv). Only these can be launched.
-JOBS = {
-    "fetch": [("fetch prices + fundamentals", [PY, "scripts/fetch.py"])],
-    "screen-momentum": [("momentum screen", [PY, "scripts/screen.py", "--mode", "momentum"])],
-    "screen-dip": [("dip screen", [PY, "scripts/screen.py", "--mode", "dip"])],
-    "refresh-all": [
-        ("fetch prices + fundamentals", [PY, "scripts/fetch.py"]),
-        ("momentum screen", [PY, "scripts/screen.py", "--mode", "momentum"]),
-        ("dip screen", [PY, "scripts/screen.py", "--mode", "dip"]),
-    ],
-}
-
-
-class JobRunner:
-    """Runs one whitelisted job at a time, capturing merged output lines."""
-
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.lines = []
-        self.name = None
-        self.proc = None
-        self.done = True
-        self.exit_code = None
-        self.started_at = None
-
-    def _log(self, line):
-        with self.lock:
-            self.lines.append(line)
-
-    def start(self, name):
-        if name not in JOBS:
-            return False
-        with self.lock:
-            if not self.done:
-                return False
-            self.name = name
-            self.lines = []
-            self.done = False
-            self.exit_code = None
-            self.started_at = time.time()
-        threading.Thread(target=self._run, args=(name,), daemon=True).start()
-        return True
-
-    def stop(self):
-        with self.lock:
-            proc = self.proc
-        if proc is not None:
-            proc.terminate()
-            return True
-        return False
-
-    def _run(self, name):
-        code = 0
-        for label, cmd in JOBS[name]:
-            self._log(f"── {label}: {' '.join(cmd)}")
-            try:
-                proc = subprocess.Popen(
-                    cmd, cwd=ROOT, stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT, text=True, bufsize=1,
-                )
-                with self.lock:
-                    self.proc = proc
-                for line in proc.stdout:
-                    self._log(line.rstrip("\n"))
-                code = proc.wait()
-            except Exception as exc:  # noqa: BLE001 - report any launch failure to the UI
-                self._log(f"error: {exc}")
-                code = 1
-            if code != 0:
-                self._log(f"── {label} exited with code {code}; stopping.")
-                break
-        self._log(f"── done (exit {code}, {time.time() - self.started_at:.0f}s)")
-        with self.lock:
-            self.done = True
-            self.exit_code = code
-            self.proc = None
-
-    def snapshot(self):
-        with self.lock:
-            return {
-                "name": self.name,
-                "running": not self.done,
-                "exit_code": self.exit_code,
-                "lines": list(self.lines),
-                "started_at": self.started_at,
-            }
-
-
-RUNNER = JobRunner()
 
 
 def _read_csv(path):
@@ -202,17 +105,8 @@ button {
   padding: 7px 14px; cursor: pointer;
 }
 button:hover:not(:disabled) { border-color: var(--accent); }
-button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-button:disabled { opacity: 0.45; cursor: default; }
-button.danger { border-color: var(--critical); color: var(--critical); }
 .hint { color: var(--muted); font-size: 12.5px; }
-#joblog { display: none; }
-#joblog pre {
-  background: var(--page); border: 1px solid var(--grid); border-radius: 8px;
-  padding: 10px 12px; max-height: 260px; overflow: auto;
-  font-size: 12px; white-space: pre-wrap;
-}
-.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.hint code { font-family: ui-monospace, monospace; font-size: 12px; }
 nav.tabs { display: flex; gap: 4px; margin-top: 20px; border-bottom: 1px solid var(--grid); }
 nav.tabs button {
   border: none; background: none; border-radius: 8px 8px 0 0;
@@ -287,26 +181,11 @@ section.tab.active { display: block; }
 </header>
 
 <div class="card">
-  <h2>Run</h2>
   <div class="row">
-    <button class="primary" data-job="refresh-all">Fetch + run both screens</button>
-    <button data-job="fetch">Fetch prices only</button>
-    <button data-job="screen-momentum">Momentum screen</button>
-    <button data-job="screen-dip">Dip screen</button>
-    <button class="danger" id="stopbtn" style="display:none">Stop</button>
-    <span class="hint">fetch pulls ~500 tickers (takes minutes); screens re-rank from cached data in seconds</span>
-  </div>
-  <div class="row" style="margin-top:10px">
-    <span class="hint">Full AI pick (research + Opus panel) runs in Claude Code — paste:</span>
+    <span class="hint">Read-only view of <code>output/</code> and <code>picks/ledger.csv</code>.
+      To refresh, run in Claude Code:</span>
     <span class="cmd">/stock-pick-momentum <button data-copy="/stock-pick-momentum">copy</button></span>
     <span class="cmd">/stock-pick-dip <button data-copy="/stock-pick-dip">copy</button></span>
-  </div>
-  <div id="joblog" style="margin-top:12px">
-    <div class="row" style="margin-bottom:6px">
-      <span class="status-dot" id="jobdot"></span>
-      <span id="jobstatus" class="hint"></span>
-    </div>
-    <pre id="joblines"></pre>
   </div>
 </div>
 
@@ -524,30 +403,6 @@ async function loadState() {
   $("#tab-ledger").innerHTML = renderLedger(st.ledger);
 }
 
-// -- job control
-let polling = null;
-async function pollJob() {
-  const j = await (await fetch("/api/job")).json();
-  const log = $("#joblog");
-  if (j.name === null && !j.running) { log.style.display = "none"; return; }
-  log.style.display = "block";
-  $("#jobdot").style.background = j.running ? "var(--warning)" : (j.exit_code === 0 ? "var(--good)" : "var(--critical)");
-  $("#jobstatus").textContent = j.running
-    ? `running: ${j.name}…`
-    : `${j.name} finished (exit ${j.exit_code})`;
-  const pre = $("#joblines");
-  pre.textContent = j.lines.join("\n");
-  pre.scrollTop = pre.scrollHeight;
-  document.querySelectorAll("button[data-job]").forEach(b => b.disabled = j.running);
-  $("#stopbtn").style.display = j.running ? "" : "none";
-  if (!j.running && polling) { clearInterval(polling); polling = null; loadState(); }
-}
-document.querySelectorAll("button[data-job]").forEach(btn => btn.onclick = async () => {
-  await fetch("/api/run", { method: "POST", body: JSON.stringify({ job: btn.dataset.job }) });
-  if (!polling) polling = setInterval(pollJob, 1000);
-  pollJob();
-});
-$("#stopbtn").onclick = () => fetch("/api/stop", { method: "POST" });
 document.querySelectorAll("button[data-copy]").forEach(btn => btn.onclick = () => {
   navigator.clipboard.writeText(btn.dataset.copy);
   btn.textContent = "copied"; setTimeout(() => btn.textContent = "copy", 1200);
@@ -558,7 +413,6 @@ document.querySelectorAll("nav.tabs button").forEach(btn => btn.onclick = () => 
 });
 
 loadState();
-pollJob();
 </script>
 </body>
 </html>
@@ -582,27 +436,6 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, svg, "image/svg+xml")
         elif self.path == "/api/state":
             self._send(200, json.dumps(read_state()))
-        elif self.path == "/api/job":
-            self._send(200, json.dumps(RUNNER.snapshot()))
-        else:
-            self._send(404, json.dumps({"error": "not found"}))
-
-    def do_POST(self):
-        if self.path == "/api/run":
-            length = int(self.headers.get("Content-Length", 0))
-            try:
-                body = json.loads(self.rfile.read(length) or b"{}")
-            except json.JSONDecodeError:
-                body = {}
-            job = body.get("job")
-            if job not in JOBS:
-                self._send(400, json.dumps({"error": f"unknown job {job!r}"}))
-            elif RUNNER.start(job):
-                self._send(200, json.dumps({"started": job}))
-            else:
-                self._send(409, json.dumps({"error": "a job is already running"}))
-        elif self.path == "/api/stop":
-            self._send(200, json.dumps({"stopped": RUNNER.stop()}))
         else:
             self._send(404, json.dumps({"error": "not found"}))
 
