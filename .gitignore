@@ -9,3 +9,7 @@ data/
 
 # output/<mode>/ artifacts (shortlists, funnel, dossiers, picks) are COMMITTED
 # deliberately — they're the audit trail next to each pick in picks/ledger.csv.
+
+# Playwright screenshot debris from UI sessions
+.playwright-mcp/
+dash-top.png

@@ -292,6 +292,3 @@ Research / educational tooling. Not financial advice. Data from third-party
 sources may be stale or wrong — verify before acting.
 
 (Session breadcrumbs for past runs live in `NOTES.md`.)
-
-Fable session: claude --resume 52eab3f4-f5cf-4466-9856-6dee096ace57
-Built the real-money guardrails — exit rules + realized scorecard (WS-6), sizing policy (WS-7), earnings-quality value-trap flags (WS-1), and bear/base/bull + EV-or-pass writeup discipline (WS-3) — all tested, all uncommitted and awaiting your review: claude --resume bcc1bcb1-4d1d-492b-b195-3c3922350919
