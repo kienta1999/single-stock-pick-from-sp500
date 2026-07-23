@@ -2,7 +2,7 @@
 """Fetch + cache the raw data the screen needs, one row of truth per ticker.
 
 Three sources, all yfinance (kept deliberately lean — this is a current-snapshot
-screen, not the full point-in-time XBRL pipeline of ml-stock-forward-return):
+screen, not the full point-in-time XBRL pipeline of ranker-21d-sp500):
 
   1. Prices       -> data/prices/{TICKER}.parquet   (~13 months of daily OHLCV)
                      Drives momentum: distance from 200d SMA, 52w-high, 6/12m return.

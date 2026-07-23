@@ -2,7 +2,7 @@
 """Current S&P 500 roster with GICS classification.
 
 This is a *live snapshot* screener (not a point-in-time backtest), so unlike
-the sibling ml-stock-forward-return project we don't need the historical
+the sibling ranker-21d-sp500 project we don't need the historical
 membership CSV — only today's members and their GICS Sector / Sub-Industry,
 both of which come from the Wikipedia roster in a single scrape.
 

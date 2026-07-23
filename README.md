@@ -1,4 +1,4 @@
-# single-stock-pick-from-sp500
+# conviction-pick-sp500
 
 Pick **one** S&P 500 stock with explosive-return potential (or a ranked top-N) —
 by funneling all 503 members through a **deterministic quality screen** (Python),
@@ -241,14 +241,14 @@ Plus the cross-mode scorecard:
   info ~3 days, annual statements ~7 days under `data/`, all git-ignored).
 
 This is a _current-snapshot_ screen, so unlike the sibling
-`ml-stock-forward-return` project it needs no point-in-time membership history
+`ranker-21d-sp500` project it needs no point-in-time membership history
 or SEC XBRL pipeline.
 
 ## Roadmap / TODO
 
 - [ ] **Backtest the deterministic funnel point-in-time** (the big one). The
       ledger only starts 2026-06-21, so `scorecard.py` needs years to judge the
-      doctrine. But the sibling `ml-stock-forward-return` repo already has
+      doctrine. But the sibling `ranker-21d-sp500` repo already has
       everything needed to backtest the _deterministic half_ historically:
       point-in-time S&P 500 membership (1996+), per-ticker OHLCV back to 2005,
       XBRL fundamentals (TTM income, D/E, revenue growth), and sectors.
@@ -262,7 +262,7 @@ or SEC XBRL pipeline.
       repo's README.)
 - [ ] **Third strategy: `--mode insider`.** Screen for cluster insider buying
       (multiple officers, direct open-market P transactions, meaningful net
-      dollars — the Form 4 bulk pipeline in `ml-stock-forward-return/scripts/insider.py`
+      dollars — the Form 4 bulk pipeline in `ranker-21d-sp500/scripts/insider.py`
       already downloads this) + the shared quality gates, then a
       `/stock-pick-insider` skill researches _why_ insiders are buying. Panel
       lenses: conviction-buyer / opportunist-vs-routine / bagholder-skeptic /
