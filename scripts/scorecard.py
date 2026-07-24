@@ -183,6 +183,13 @@ def main() -> None:
         raise SystemExit("Nothing to score.")
     led["date"] = pd.to_datetime(led["date"])
 
+    # Guard: exit_price belongs on kind=close rows only. Values on pick rows are
+    # the misplaced-bear-target bug (migrated 2026-07-23) creeping back in.
+    bad = led[(led["kind"] != "close") & led["exit_price"].notna()]
+    if not bad.empty:
+        print(f"⚠ {len(bad)} non-close row(s) carry exit_price — should be in bear_target: "
+              + ", ".join(f"{r['date'].date()}/{r['mode']}/{r['ticker']}" for _, r in bad.iterrows()) + "\n")
+
     closes_rows = led[led["kind"] == "close"]
     picks = led[~led["kind"].isin(["close", "pass"])].copy()
     passes = led[led["kind"] == "pass"]
